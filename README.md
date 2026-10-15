@@ -214,6 +214,12 @@ Smooth Prose integrates natively into modern AI coding assistants:
 
 ---
 
+## Testing
+
+Claim tests, skill evals and agent sandbox runs are described in [tests/README.md](tests/README.md); the latest results are in [tests/SUMMARY.md](tests/SUMMARY.md).
+
+---
+
 ## Contributing & Security
 
 * **Contributing:** Please read [CONTRIBUTING.md](CONTRIBUTING.md) for pull request guidelines and heuristic submission.
