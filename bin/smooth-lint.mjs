@@ -27,7 +27,13 @@ const colors = {
 // 1. Rules catalog: heuristics/slop-catalog.json is the single source of truth (EN + ES).
 const CATALOG_PATH = fileURLToPath(new URL('../heuristics/slop-catalog.json', import.meta.url));
 const CATALOG = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf-8'));
-const SLOP_RULES = CATALOG.rules.map(r => ({ ...r, pattern: new RegExp(r.regex, r.flags || 'gi') }));
+// Rules may use {{class}} placeholders; each expands to a non-capturing alternation from CATALOG.classes
+const expandClasses = src => src.replace(/\{\{(\w+)\}\}/g, (_, name) => {
+  const words = CATALOG.classes && CATALOG.classes[name];
+  if (!Array.isArray(words)) throw new Error(`slop-catalog: unknown class {{${name}}}`);
+  return `(?:${words.join('|')})`;
+});
+const SLOP_RULES = CATALOG.rules.map(r => ({ ...r, pattern: new RegExp(expandClasses(r.regex), r.flags || 'gi') }));
 
 // Distinctive function words used to guess the document language (no overlap between sets)
 const LANG_HINTS = {
@@ -238,9 +244,20 @@ function lintText(text, filePath = '<stdin>', langOpt = 'auto', factsText = '') 
         severity: rule.severity,
         line,
         column,
+        offset: m.index,
         match: m[0].trim(),
         fix: rule.fix
       });
+    }
+  }
+
+  // Direct quotes are shielded: text inside "..." / “...” / «...» is somebody's words, not ours to flag
+  const quoted = [];
+  for (const q of scannableText.matchAll(/"[^"\n]{3,300}"|“[^”\n]{3,300}”|«[^»\n]{3,300}»/g)) quoted.push([q.index, q.index + q[0].length]);
+  if (quoted.length) {
+    for (let i = issues.length - 1; i >= 0; i--) {
+      const o = issues[i].offset;
+      if (quoted.some(([a, b]) => o >= a && o < b)) issues.splice(i, 1);
     }
   }
 

@@ -120,13 +120,24 @@ test('lint: burstiness rates monotone text as synthetic, varied text as organic'
 test('catalog: valid, every rule has lang/severity/fix and a compiling regex', () => {
   const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'heuristics', 'slop-catalog.json'), 'utf8'));
   assert.ok(cat.rules.length > 0);
+  const expand = (src) => src.replace(/\{\{(\w+)\}\}/g, (_, n) => {
+    assert.ok(Array.isArray(cat.classes[n]), `unknown class ${n}`);
+    return `(?:${cat.classes[n].join('|')})`;
+  });
   for (const r of cat.rules) {
-    assert.doesNotThrow(() => new RegExp(r.regex, r.flags), r.id);
+    assert.doesNotThrow(() => new RegExp(expand(r.regex), r.flags), r.id);
     assert.ok(['en', 'es'].includes(r.lang), `${r.id}: lang`);
     assert.ok(['error', 'warning', 'info'].includes(r.severity), `${r.id}: severity`);
     assert.ok(r.fix, `${r.id}: fix`);
   }
   assert.equal(new Set(cat.rules.map((r) => r.id)).size, cat.rules.length, 'duplicate rule ids');
+});
+
+test('catalog: no rule or class is tied to a product name or to the domain of a test fixture', () => {
+  const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'heuristics', 'slop-catalog.json'), 'utf8'));
+  const blob = JSON.stringify({ rules: cat.rules.map((r) => r.regex), classes: cat.classes }).toLowerCase();
+  for (const w of ['torque', 'halyard', 'skerry', 'babysit', 'harness', 'agent', 'llm', 'microvm', 'langgraph'])
+    assert.ok(!blob.includes(w), `catalog contains the fixture-specific word "${w}"`);
 });
 
 test('catalog: EN and ES cover the same categories', () => {
@@ -156,28 +167,47 @@ const SAMPLES = [
   ['narrative-cliches-en', 'A shiver ran down his spine as tension hung in the air.', 'Her hands shook over the keys.'],
   ['pseudo-profound-en', 'Let that sink in.', 'Revenue grew 12% in Q3.'],
   ['hesitation-en', 'The iron seemed to resist the blow.', 'The iron resisted the blow.'],
-  ['landing-cliche-en', 'Halyard keeps your agents on course.', 'Halyard records every step of a run.'],
-  ['landing-cliche-en', 'A tool built for serious teams.', 'The tool is built for Linux and macOS.'],
-  ['landing-cliche-en', 'Everything an agent needs to finish the job.', 'An agent needs a model and a set of tools.'],
-  ['social-proof-en', 'Why teams love Halyard.', 'Two teams reported results; the numbers are in the appendix.'],
-  ['social-proof-en', 'Trusted by thousands of developers.', 'Used by the internal build team since March.'],
-  ['unsourced-metric-en', 'Torque delivers 14.2x faster throughput.', 'Median task time fell from 14.8 to 6.4 minutes on the 300-task benchmark.'],
+  // Held-out wordings of each family (not taken from any observed output) plus legitimate uses that must stay quiet.
+  ['slogan-template-en', 'Made for modern teams.', 'The binary is built for Linux and macOS.'],
+  ['slogan-template-en', 'Built for serious developers.', 'Designed for modern web browsers.'],
+  ['slogan-template-en', 'It keeps every pipeline on track.', 'The job keeps the cache on disk.'],
+  ['slogan-template-en', 'Embark on a smarter workflow.', 'Run the installer, then restart the shell.'],
+  ['slogan-template-en', 'A giant leap forward for builders.', 'The array grows by one element per call.'],
+  ['slogan-template-en', 'No gimmicks, no hidden fees.', 'The license has no restrictions on commercial use.'],
+  ['slogan-template-en', 'From prototype to production in minutes.', 'The migration runs from staging to production on Fridays.'],
+  ['slogan-template-en', 'Everything your team needs in one place.', 'Your team needs a reviewer for each release.'],
+  ['slogan-template-en', 'So you can focus on what matters.', 'Focus the camera on the label.'],
+  ['slogan-template-en', "Whether you're a founder or an engineer, it fits.", 'Whether the test passes depends on the seed.'],
+  ['social-proof-en', 'Why developers love it.', 'Two developers reported the bug; the issue links the logs.'],
+  ['social-proof-en', 'Trusted by thousands of teams.', 'Used by the build server since March.'],
+  ['social-proof-en', 'Join 10,000 developers today.', 'Join the meeting at 10:00.'],
+  ['unsourced-metric-en', 'It delivers 14.2x faster throughput.', 'Median task time fell from 14.8 to 6.4 minutes on the 300-task benchmark.'],
   ['unsourced-metric-en', 'Cold start under 8ms.', 'The timeout is 8 seconds.'],
-  ['unsourced-metric-en', 'Uptime of 99.98% nominal.', 'We target an uptime above 99% (measured monthly, see the status page).'],
+  ['unsourced-metric-en', 'Uptime of 99.98% nominal.', 'Uptime above 99% (measured monthly, see the status page).'],
   ['unsourced-metric-en', 'Throughput\n14.2x\nover the baseline', 'Throughput\nincreased over the baseline'],
-  ['absolute-claim-en', 'Zero context drift over 500 turns.', 'Context drift stayed below 2% over 500 turns in our tests.'],
-  ['absolute-claim-en', 'Certified secure runtime.', 'The runtime passed the SOC 2 Type II audit in March.'],
-  ['absolute-claim-en', 'It never fails.', 'It retries three times before failing.'],
-  ['competitor-strawman-en', 'Most harnesses collapse under tool faults.', 'Torque retries a failed tool call once.'],
-  ['competitor-strawman-en', 'Torque outclasses primitive script-based libraries.', 'Torque is written in TypeScript.'],
-  ['competitor-strawman-en', 'Unlike other frameworks, we log every step.', 'We log every step.'],
-  ['hype-vocabulary-en', 'An industrial-grade runtime.', 'A runtime with 40 lines of policy.'],
-  ['hype-vocabulary-en', 'Stop babysitting your agents.', 'Review the run log after each task.'],
+  ['absolute-claim-en', 'Zero downtime, zero risk.', 'Downtime stayed under four minutes in March.'],
+  ['absolute-claim-en', '100% secure by design.', 'Passwords are hashed with Argon2.'],
+  ['absolute-claim-en', 'An unhackable vault.', 'A vault that rotates keys weekly.'],
+  ['absolute-claim-en', 'It never crashes.', 'It retries three times before it fails.'],
+  ['absolute-claim-en', 'Verified safe for every workload.', 'The workload was verified in staging.'],
+  ['absolute-claim-en', 'Error-free deployments.', 'Deployments log their errors.'],
+  ['competitor-strawman-en', 'Traditional frameworks lack observability.', 'Traditional Chinese text is supported.'],
+  ['competitor-strawman-en', 'Why existing platforms fail.', 'Existing sessions keep their tokens.'],
+  ['competitor-strawman-en', 'Unlike legacy tools, we log every step.', 'We log every step.'],
+  ['competitor-strawman-en', 'Our runtime crushes the competition.', 'Our runtime compresses logs with zstd.'],
+  ['competitor-strawman-en', 'Most tools are merely wrappers.', 'Most tools accept JSON input.'],
+  ['hype-vocabulary-en', 'Military-grade encryption.', 'AES-256 encryption at rest.'],
+  ['hype-vocabulary-en', 'Battle-tested in production.', 'Tested in staging on 12 March.'],
+  ['hype-vocabulary-en', 'Lightning-fast builds.', 'Builds finish in 40 seconds on a 4-core runner.'],
+  ['hype-vocabulary-en', 'Unrivalled performance.', 'Performance is tracked per release.'],
+  ['slogan-template-es', 'Diseñado para equipos exigentes.', 'El binario está diseñado para Linux y macOS.'],
+  ['slogan-template-es', 'De la idea a producción en minutos.', 'La migración pasa de staging a producción los viernes.'],
+  ['slogan-template-es', 'Sin trucos ni letra pequeña.', 'La licencia no tiene restricciones de uso comercial.'],
   ['unsourced-metric-es', 'Entrega 14x más rendimiento.', 'La latencia mediana bajó de 14,8 a 6,4 minutos en el benchmark de 300 tareas.'],
   ['unsourced-metric-es', 'Arranque en menos de 8 ms.', 'El tiempo de espera es de 8 segundos.'],
-  ['absolute-claim-es', 'Cero latencia en cualquier carga.', 'La latencia mediana fue de 40 ms.'],
-  ['absolute-claim-es', 'Un sistema infalible.', 'Un sistema con reintentos.'],
-  ['competitor-strawman-es', 'Las herramientas tradicionales fallan bajo carga.', 'Las colas de trabajo reintentan tres veces.'],
+  ['absolute-claim-es', 'Cero fallos en cualquier carga.', 'La latencia mediana fue de 40 ms.'],
+  ['absolute-claim-es', 'Un sistema impenetrable.', 'Un sistema con reintentos.'],
+  ['competitor-strawman-es', 'Las herramientas existentes colapsan bajo carga.', 'Las colas de trabajo reintentan tres veces.'],
   ['competitor-strawman-es', 'A diferencia de otros arneses, registramos cada paso.', 'Registramos cada paso.'],
   ['hype-vocabulary-es', 'Un runtime de grado industrial.', 'Un runtime con cuarenta líneas de política.'],
   ['contrast-es', 'No es un problema técnico, sino de coordinación.', 'Es un problema de coordinación.'],
@@ -209,9 +239,16 @@ test('lint: the frontier-model landing fixture is flagged by the new rule famili
   const by = (id) => r.issues.filter((i) => i.id === id).length;
   assert.ok(by('unsourced-metric-en') >= 8, `metrics: ${by('unsourced-metric-en')}`);
   assert.ok(by('absolute-claim-en') >= 3, 'absolutes');
-  assert.ok(by('competitor-strawman-en') >= 4, 'strawmen');
-  assert.ok(by('hype-vocabulary-en') >= 3, 'hype vocabulary');
+  assert.ok(by('competitor-strawman-en') >= 2, 'strawmen');
+  assert.ok(by('hype-vocabulary-en') >= 1, 'hype vocabulary');
   assert.equal(r.issues.filter((i) => i.severity === 'error').length, 0, 'new families are warnings, never blocking');
+});
+
+test('lint: direct quotes are shielded from every rule, the same words outside quotes are not', () => {
+  const quoted = lint('"Here\'s the thing: we delved into the data, it is not about speed, but trust," said Priya Nair.');
+  assert.equal(quoted.issues.length, 0, JSON.stringify(ids(quoted)));
+  assert.ok(lint("Here's the thing: we delved into the data.").issues.length > 0);
+  assert.equal(lint('«Seamos claros: no es velocidad, sino confianza», dijo Ana.').issues.length, 0);
 });
 
 test('lint: --facts exempts metrics the author supplied, and only those', () => {

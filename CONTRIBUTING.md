@@ -15,8 +15,9 @@ All contributors are expected to uphold a welcoming, professional, and respectfu
 ### 1. Adding Deterministic Heuristics
 If you identify a new, recurring synthetic AI writing pattern:
 1. Ensure the pattern is verifiable via deterministic RegEx or lexical parsing (no black-box LLM classifiers).
-2. Add the rule definition to `heuristics/slop-catalog.json`.
-3. Add a test case demonstrating the false positive / true positive behavior.
+2. Add the rule definition to `heuristics/slop-catalog.json`. Describe a family of patterns, not one text: write a template over word classes (`{{class}}` placeholders expand from the `classes` block) and do not copy phrases, product names or domain words from a single example. A test guards against fixture-specific words in the catalog.
+3. Add test cases in `tests/cli.test.mjs`: one wording the rule must flag that you did not take from your example, and one legitimate use it must leave alone.
+4. Direct quotes are shielded by the linter, and markdown lines marked with a cross mark or starting with `Avoid:` are skipped, so documentation can quote slop.
 
 ### 2. Proposing Editorial Rules
 Changes to the core anti-slop directive (`rules/anti-slop-directive.md`) or domain skills must adhere to the **Minimum Effective Change** and **Portability Test** principles.

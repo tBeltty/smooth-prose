@@ -154,26 +154,6 @@
       "fix": "Use the direct assertive verb (resisted, felt, advanced)."
     },
     {
-      "id": "landing-cliche-en",
-      "lang": "en",
-      "category": "hype",
-      "severity": "warning",
-      "name": "Landing-Page Cliché",
-      "regex": "\\b(?:keeps?\\s+(?:your\\s+)?\\w+\\s+on\\s+(?:course|track)|built\\s+for\\s+(?:real|serious|modern)\\s+\\w+|set\\s+sail|(?:a|the)\\s+(?:real\\s+|big\\s+|huge\\s+|giant\\s+)?step\\s+up\\b|nothing\\s+(?:is\\s+)?hidden|everything\\s+(?:an?\\s+\\w+|your\\s+\\w+)\\s+needs?|(?:finish|finishes|get|gets)\\s+the\\s+job(?:\\s+done)?|from\\s+(?:an?\\s+)?idea\\s+to\\s+(?:an?\\s+)?(?:running|working|production|live)|so\\s+you\\s+can\\s+focus\\s+on\\s+what\\s+(?:really\\s+|actually\\s+)?(?:matters|counts)|ship\\s+\\w+\\s+(?:you|that)\\s+(?:actually\\s+)?trust|whether\\s+you(?:['’]re|\\s+are)\\s+a\\b)",
-      "flags": "gi",
-      "fix": "Say what the product does in one concrete sentence; cut the slogan."
-    },
-    {
-      "id": "social-proof-en",
-      "lang": "en",
-      "category": "hype",
-      "severity": "warning",
-      "name": "Unsupported Social Proof",
-      "regex": "\\b(?:why\\s+(?:teams|developers|engineers|companies|people)\\s+(?:love|choose|trust|move\\s+to|switch\\s+to|use)\\s+\\w+|(?:trusted|loved|used)\\s+by\\s+(?:thousands|hundreds|millions|teams|developers|engineers|leading|top)|(?:teams|developers|engineers)\\s+(?:love|trust)\\s+\\w+|join\\s+(?:thousands|hundreds|millions|\\d[\\d,]*)\\s+(?:of\\s+)?(?:teams|developers|engineers|users)|what\\s+(?:our\\s+)?(?:customers|users|developers)\\s+(?:are\\s+)?say(?:ing)?)\\b",
-      "flags": "gi",
-      "fix": "Remove it, or replace it with a named customer, a number and a source you can show."
-    },
-    {
       "id": "unsourced-metric-en",
       "lang": "en",
       "category": "metric",
@@ -184,12 +164,32 @@
       "fix": "Name the benchmark, dataset, date and baseline, or remove the number."
     },
     {
+      "id": "slogan-template-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Slogan Template / Stock Idiom",
+      "regex": "\\b(?:{{en_build_verb}}\\s+for\\s+(?:the\\s+)?(?:{{en_vague_adj}}\\s+{{en_people_or_work}}|{{en_vague_abstract}})|(?:keeps?|keeping|stays?|staying)\\s+(?:\\w+\\s+){0,3}on\\s+(?:course|track|target)|embark(?:s|ing)?\\s+on|set(?:s|ting)?\\s+sail|chart(?:s|ing)?\\s+(?:a|your|the)\\s+course|(?:a|the)\\s+(?:{{en_size_adj}}\\s+)?{{en_leap_noun}}\\s+(?:up|forward|ahead)|(?:no|nothing)\\s+(?:is\\s+)?{{en_reassure_noun}}|nothing\\s+(?:to\\s+hide|extra|fancy)|everything\\s+(?:you|your\\s+\\w+|an?\\s+\\w+(?:\\s+\\w+)?|teams?|developers?)\\s+needs?|(?:get|gets|getting|finish|finishes|finishing)\\s+the\\s+job(?:\\s+done)?|from\\s+(?:an?\\s+)?{{en_start_noun}}\\s+to\\s+(?:an?\\s+)?(?:production|launch|live|running|working|done|market|scale|shipped|deployed|reality)|so\\s+you\\s+can\\s+(?:focus|concentrate)\\s+on\\s+what\\s+(?:\\w+\\s+)?(?:matters|counts|is\\s+important)|(?:ship|build|deploy|run)\\s+\\w+(?:\\s+\\w+)?\\s+(?:you|your\\s+\\w+)\\s+(?:can\\s+|actually\\s+|truly\\s+)?trust|whether\\s+you(?:['’]re|\\s+are)\\s+an?)\\b",
+      "flags": "gi",
+      "fix": "Say what the product does in one concrete sentence; cut the slogan."
+    },
+    {
+      "id": "social-proof-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Unsupported Social Proof",
+      "regex": "\\b(?:why\\s+{{en_audience}}\\s+{{en_like_verb}}\\s+\\w+|(?:trusted|loved|used|chosen)\\s+by\\s+{{en_crowd}}|{{en_audience}}\\s+(?:love|trust)\\s+\\w+|join\\s+{{en_crowd}}\\s+(?:of\\s+)?{{en_audience}}|what\\s+(?:our\\s+)?(?:customers|users|developers)\\s+(?:are\\s+)?say(?:ing)?)\\b",
+      "flags": "gi",
+      "fix": "Remove it, or replace it with a named customer, a number and a source you can show."
+    },
+    {
       "id": "absolute-claim-en",
       "lang": "en",
       "category": "hype",
       "severity": "warning",
       "name": "Absolute Claim",
-      "regex": "\\b(?:zero\\s+(?:context\\s+|contaminated\\s+)?(?:drift|downtime|latency|overhead|errors?|bugs?|failures?|hallucinations?|contaminat\\w+|risk|friction|compromise)|100\\s?%\\s+(?:secure|reliable|accurate|safe|uptime|guaranteed|private)|(?:never|always)\\s+(?:fails?|breaks?|crash\\w*|loses?|misses?)|certified\\s+(?:secure|safe)|unbreakable|bulletproof|foolproof|flawless(?:ly)?|guaranteed\\s+to|perfect(?:ly)?\\s+(?:secure|reliable|accurate|safe)|instantaneous(?:ly)?|in\\s+microseconds)\\b",
+      "regex": "\\b(?:zero\\s+(?:\\w+\\s+)?{{en_failure_noun}}|100\\s?%\\s+{{en_safe_adj}}|(?:never|always)\\s+{{en_failure_verb}}|{{en_proof_adj}}\\s+{{en_safe_adj}}|{{en_absolute_adj}}|guaranteed\\s+to|perfect(?:ly)?\\s+{{en_safe_adj}})\\b",
       "flags": "gi",
       "fix": "State the measured bound, the conditions and the exceptions instead of an absolute."
     },
@@ -199,7 +199,7 @@
       "category": "hype",
       "severity": "warning",
       "name": "Unsupported Attack on Alternatives",
-      "regex": "\\b(?:(?:standard|traditional|typical|usual|legacy|conventional|most|other|existing|primitive|basic|simple)\\s+(?:agent\\s+)?(?:harnesses|frameworks|tools|libraries|solutions|platforms|alternatives|approaches|systems|wrappers)\\s+(?:are|fail|collapse|break|suffer|struggle|can(?:['’]t|not)|pollute|bloat|lack|rely|only|just)\\b|why\\s+(?:standard|traditional|typical|most|other|existing)\\s+\\w+(?:\\s+\\w+)?\\s+fail|unlike\\s+(?:other|most|traditional|typical|standard)\\s+\\w+|(?:outclass|outclasses|obliterates?|crushes|destroys)\\s+(?:primitive|traditional|every|all|other|the\\s+usual|the\\s+competition)|primitive\\s+(?:script|tool|agent|librar|framework)\\w*|vulnerable\\s+to\\s+agent\\s+escape)",
+      "regex": "\\b(?:{{en_generic_alt}}\\s+{{en_alt_noun}}\\s+{{en_negative_pred}}|why\\s+{{en_generic_alt}}\\s+\\w+(?:\\s+\\w+)?\\s+fail|unlike\\s+{{en_generic_alt}}\\s+\\w+|{{en_dominate_verb}}\\s+{{en_generic_target}})\\b",
       "flags": "gi",
       "fix": "Compare against a named alternative with a measured difference, or describe your product only."
     },
@@ -209,9 +209,19 @@
       "category": "hype",
       "severity": "warning",
       "name": "Hype Vocabulary",
-      "regex": "\\b(?:industrial|enterprise|military|bank)[- ]grade|battle[- ]tested|rock[- ]solid|blazing(?:ly)?[- ]fast|lightning[- ]fast|unparalleled|unrivall?ed|second\\s+to\\s+none|stop\\s+babysitting|pure\\s+(?:power|torque|speed)|engineered\\s+for\\s+(?:production\\s+)?(?:autonomy|performance|scale)",
+      "regex": "\\b(?:{{en_grade_prefix}}[- ]grade|battle[- ]tested|rock[- ]solid|{{en_speed_prefix}}[- ]fast|{{en_uniqueness}})\\b",
       "flags": "gi",
       "fix": "Replace the adjective with the property it stands for, and a number if you have one."
+    },
+    {
+      "id": "slogan-template-es",
+      "lang": "es",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Eslogan Hecho / Modismo de Marketing",
+      "regex": "\\b(?:(?:diseñad[oa]s?|construid[oa]s?|pensad[oa]s?)\\s+para\\s+(?:equipos|desarrolladores|quienes|personas)\\s+(?:serios|exigentes|ambiciosos|que)|todo\\s+lo\\s+que\\s+(?:tu\\s+)?(?:equipo\\s+)?necesit(?:a|as|an)|sin\\s+(?:trucos|letra\\s+pequeña|sorpresas|humo)|de\\s+la\\s+idea\\s+a\\s+(?:producción|la\\s+realidad|el\\s+lanzamiento)|(?:un\\s+)?(?:gran\\s+)?salto\\s+(?:adelante|de\\s+gigante)|emprende\\s+(?:un|el)\\s+viaje|para\\s+que\\s+te\\s+centres\\s+en\\s+lo\\s+que\\s+importa)\\b",
+      "flags": "gi",
+      "fix": "Di qué hace el producto en una frase concreta; elimina el eslogan."
     },
     {
       "id": "unsourced-metric-es",
@@ -229,7 +239,7 @@
       "category": "hype",
       "severity": "warning",
       "name": "Afirmación Absoluta",
-      "regex": "\\b(?:cero\\s+(?:deriva|latencia|fallos?|errores?|caídas|riesgo|downtime|alucinaciones)|100\\s?%\\s+(?:seguro|fiable|confiable|preciso|garantizado)|inquebrantable|infalible|a\\s+prueba\\s+de\\s+balas|certificado\\s+(?:seguro|a\\s+prueba)|instantáneamente|en\\s+microsegundos|nunca\\s+(?:falla|se\\s+rompe|pierde))\\b",
+      "regex": "\\b(?:cero\\s+(?:\\w+\\s+)?(?:deriva|latencia|fallos?|errores?|caídas|riesgos?|downtime|alucinaciones|vulnerabilidades|pérdidas?\\s+de\\s+datos)|100\\s?%\\s+(?:seguro|fiable|confiable|preciso|garantizado)|inquebrantable|infalible|impenetrable|a\\s+prueba\\s+de\\s+(?:balas|fallos|errores)|(?:certificado|garantizado|comprobado)\\s+(?:seguro|fiable)|instantáneamente|nunca\\s+(?:falla|se\\s+rompe|pierde))\\b",
       "flags": "gi",
       "fix": "Indica el límite medido, las condiciones y las excepciones en lugar de un absoluto."
     },
@@ -239,7 +249,7 @@
       "category": "hype",
       "severity": "warning",
       "name": "Ataque Genérico a la Competencia",
-      "regex": "\\b(?:(?:los\\s+|las\\s+)?(?:frameworks?|herramientas|soluciones|plataformas|arneses|alternativas|librerías|bibliotecas)\\s+(?:tradicionales|convencionales|habituales|típic\\w+|estándar|existentes|primitiv\\w+)\\s+(?:fallan|colapsan|se\\s+rompen|sufren|no\\s+pueden|carecen|son)|a\\s+diferencia\\s+de\\s+(?:otros|las\\s+demás|los\\s+demás|la\\s+competencia)|por\\s+qué\\s+(?:las?\\s+)?\\w+\\s+(?:tradicionales|estándar|típic\\w+)\\s+fallan|supera\\s+a\\s+(?:las?\\s+)?(?:alternativas\\s+)?primitiv\\w+)",
+      "regex": "\\b(?:(?:los\\s+|las\\s+)?{{es_alt_noun}}\\s+{{es_generic_alt}}\\s+{{es_negative_pred}}|a\\s+diferencia\\s+de\\s+(?:otros|otras|las\\s+demás|los\\s+demás|la\\s+competencia)|por\\s+qué\\s+(?:las?\\s+)?\\w+\\s+{{es_generic_alt}}\\s+fallan|(?:supera|aplasta|deja\\s+atrás)\\s+a\\s+(?:las?\\s+)?(?:alternativas\\s+)?(?:primitiv\\w+|tradicionales|la\\s+competencia))\\b",
       "flags": "gi",
       "fix": "Compara con una alternativa concreta y una diferencia medida, o describe solo tu producto."
     },
@@ -249,7 +259,7 @@
       "category": "hype",
       "severity": "warning",
       "name": "Vocabulario Inflado",
-      "regex": "\\b(?:de\\s+grado\\s+(?:industrial|empresarial|militar)|a\\s+toda\\s+prueba|imbatible|sin\\s+igual|inigualable|a\\s+la\\s+velocidad\\s+del\\s+rayo|ultrarrápid\\w+)\\b",
+      "regex": "\\b(?:de\\s+grado\\s+(?:industrial|empresarial|militar|bancario)|a\\s+toda\\s+prueba|imbatible|sin\\s+igual|inigualable|a\\s+la\\s+velocidad\\s+del\\s+rayo|ultrarrápid\\w+|de\\s+clase\\s+mundial)\\b",
       "flags": "gi",
       "fix": "Sustituye el adjetivo por la propiedad que representa y, si la tienes, una cifra."
     }
@@ -299,5 +309,300 @@
         "label": "refuge (swap for bastion, den, hideout)"
       }
     }
+  },
+  "classes": {
+    "_doc": "Word classes shared by the rules. A rule may use {{name}}; the linter expands it to a non-capturing alternation. Add words here to widen a family without touching the rule templates.",
+    "en_build_verb": [
+      "built",
+      "designed",
+      "engineered",
+      "crafted",
+      "made",
+      "tailored",
+      "purpose[- ]built"
+    ],
+    "en_failure_noun": [
+      "drift",
+      "downtime",
+      "latency",
+      "overhead",
+      "errors?",
+      "bugs?",
+      "failures?",
+      "hallucinations?",
+      "risk",
+      "friction",
+      "compromise",
+      "vulnerabilit(?:y|ies)",
+      "data\\s+loss",
+      "regressions?",
+      "lock[- ]in",
+      "waste"
+    ],
+    "en_absolute_adj": [
+      "unbreakable",
+      "bulletproof",
+      "foolproof",
+      "flawless(?:ly)?",
+      "unhackable",
+      "impenetrable",
+      "error[- ]free",
+      "glitch[- ]free",
+      "instantaneous(?:ly)?",
+      "infallible",
+      "untouchable"
+    ],
+    "en_failure_verb": [
+      "fails?",
+      "breaks?",
+      "crash(?:es)?",
+      "loses?",
+      "misses?",
+      "stalls?",
+      "leaks?"
+    ],
+    "en_proof_adj": [
+      "certified",
+      "guaranteed",
+      "proven",
+      "verified",
+      "fully"
+    ],
+    "en_safe_adj": [
+      "secure",
+      "safe",
+      "reliable",
+      "compliant",
+      "private"
+    ],
+    "en_generic_alt": [
+      "standard",
+      "traditional",
+      "typical",
+      "usual",
+      "legacy",
+      "conventional",
+      "most",
+      "other",
+      "existing",
+      "primitive",
+      "basic",
+      "simple",
+      "today['’]?s",
+      "current"
+    ],
+    "en_alt_noun": [
+      "frameworks",
+      "tools",
+      "libraries",
+      "solutions",
+      "platforms",
+      "alternatives",
+      "approaches",
+      "systems",
+      "products",
+      "vendors",
+      "competitors"
+    ],
+    "en_negative_pred": [
+      "are\\s+(?:just|merely|simply|only|basically)",
+      "fail",
+      "collapse",
+      "break",
+      "suffer",
+      "struggle",
+      "can(?:['’]?t|not)",
+      "pollute",
+      "bloat",
+      "lack",
+      "rely\\s+on",
+      "waste",
+      "leak"
+    ],
+    "en_dominate_verb": [
+      "outclass(?:es)?",
+      "outperform(?:s)?",
+      "obliterates?",
+      "crushes",
+      "destroys",
+      "dwarfs?",
+      "embarrass(?:es)?"
+    ],
+    "en_generic_target": [
+      "primitive",
+      "traditional",
+      "every",
+      "all",
+      "other",
+      "the\\s+usual",
+      "the\\s+competition",
+      "legacy",
+      "existing",
+      "rival",
+      "rivals",
+      "alternatives",
+      "the\\s+rest"
+    ],
+    "en_grade_prefix": [
+      "industrial",
+      "enterprise",
+      "military",
+      "bank",
+      "carrier",
+      "aerospace",
+      "surgical"
+    ],
+    "en_speed_prefix": [
+      "blazing(?:ly)?",
+      "lightning",
+      "warp",
+      "ludicrous",
+      "insanely",
+      "unbelievably"
+    ],
+    "en_uniqueness": [
+      "unparalleled",
+      "unrivall?ed",
+      "unmatched",
+      "peerless",
+      "second\\s+to\\s+none",
+      "world[- ]class",
+      "in\\s+a\\s+class\\s+of\\s+its\\s+own"
+    ],
+    "en_leap_noun": [
+      "leap",
+      "jump",
+      "step",
+      "stride"
+    ],
+    "en_size_adj": [
+      "real",
+      "big",
+      "huge",
+      "giant",
+      "quantum",
+      "major",
+      "massive",
+      "genuine"
+    ],
+    "en_reassure_noun": [
+      "magic",
+      "surprises",
+      "fluff",
+      "gimmicks",
+      "catch",
+      "nonsense",
+      "bs",
+      "strings\\s+attached",
+      "hidden\\s+\\w+"
+    ],
+    "en_audience": [
+      "teams",
+      "developers",
+      "engineers",
+      "companies",
+      "people",
+      "founders",
+      "startups",
+      "enterprises"
+    ],
+    "en_like_verb": [
+      "love",
+      "choose",
+      "trust",
+      "move\\s+to",
+      "switch\\s+to",
+      "use",
+      "rely\\s+on",
+      "pick"
+    ],
+    "en_crowd": [
+      "thousands",
+      "hundreds",
+      "millions",
+      "teams",
+      "developers",
+      "engineers",
+      "leading",
+      "top",
+      "\\d[\\d,]*\\+?"
+    ],
+    "es_alt_noun": [
+      "frameworks?",
+      "herramientas",
+      "soluciones",
+      "plataformas",
+      "arneses",
+      "alternativas",
+      "librerías",
+      "bibliotecas",
+      "productos"
+    ],
+    "es_generic_alt": [
+      "tradicionales",
+      "convencionales",
+      "habituales",
+      "típic\\w+",
+      "estándar",
+      "existentes",
+      "primitiv\\w+",
+      "actuales"
+    ],
+    "es_negative_pred": [
+      "fallan",
+      "colapsan",
+      "se\\s+rompen",
+      "sufren",
+      "no\\s+pueden",
+      "carecen",
+      "son"
+    ],
+    "en_start_noun": [
+      "idea",
+      "concept",
+      "prototype",
+      "sketch",
+      "vision",
+      "spark",
+      "plan",
+      "dream",
+      "whiteboard",
+      "napkin"
+    ],
+    "en_vague_adj": [
+      "real",
+      "serious",
+      "modern",
+      "ambitious",
+      "demanding",
+      "growing",
+      "high[- ]performance",
+      "mission[- ]critical",
+      "production"
+    ],
+    "en_people_or_work": [
+      "teams",
+      "developers",
+      "engineers",
+      "builders",
+      "makers",
+      "creators",
+      "companies",
+      "businesses",
+      "work",
+      "workloads?",
+      "projects?",
+      "use"
+    ],
+    "en_vague_abstract": [
+      "scale",
+      "speed",
+      "performance",
+      "reliability",
+      "tomorrow",
+      "the\\s+future",
+      "everyone",
+      "anyone"
+    ]
   }
 }
