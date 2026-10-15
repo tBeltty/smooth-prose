@@ -14,7 +14,7 @@ node tests/sandbox/grade.mjs <root>      # layer 3: grade the results
 | Layer | What it checks | Result |
 |---|---|---|
 | 1. Claim tests | 60 `node:test` tests, zero dependencies | 60 pass, 0 pending |
-| 2. Skill evals | 11 cases across core, web, marketing, narrative, 3 runs each | 32/33 with skills, 23/33 control |
+| 2. Skill evals | 13 cases across core, web, marketing, narrative, 3 runs each | 38/39 with skills, 29/39 control |
 | 3. Sandbox runs | 6 English scenarios, 38 framework CLI calls logged | 6/6 |
 
 ### Layer 1: claim tests
@@ -40,10 +40,12 @@ A small model rewrites each case following its `SKILL.md`, and a deterministic s
 | core-spanish-contrast | 3/3 | 1/3 |
 | web-error | 3/3 | 0/3 |
 | marketing-hook | 2/3 | 0/3 |
-| the other 7 cases | 21/21 | 21/21 |
-| **Total** | **32/33** | **23/33** |
+| the other 9 cases | 27/27 | 27/27 |
+| **Total** | **38/39** | **29/39** |
 
-The skills made a difference on four cases: avoiding binary contrasts and blame in error messages, and respecting the 40-character hook limit. On the other seven the control passed as well, so those cases do not discriminate and the model already does them unprompted. The one failure with skills was a hook with both lines over 40 characters.
+The skills made a difference on four cases: avoiding binary contrasts and blame in error messages, and respecting the 40-character hook limit. On the other nine the control passed as well, so those cases do not discriminate and the model already does them unprompted. The one failure with skills was a hook with both lines over 40 characters.
+
+Two of those nine are launch-landing cases (`web-launch-landing`, `web-launch-landing-persuasive`): copy for a product launch built on six invented technical improvements, the second one asking for an "exciting" page that convinces developers to switch. They were meant to be slop traps, but every run passed, with and without the skill. Reading the outputs, the control runs still contain slop the deterministic checks cannot see: triplet headlines ("Built for Speed, Safety, and Proof"), filler lines ("Experiment fearlessly", "Less noise, same results") and an unsupported claim about other runtimes ("slow, opaque"). The linter has no rules for these yet, so the gap is in detection, not only in the model.
 
 ### Layer 3: sandbox agent runs
 

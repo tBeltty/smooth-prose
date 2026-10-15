@@ -8,8 +8,13 @@
       "input": "Let's be clear: the bottleneck isn't a lack of tools, but a failure of coordination.",
       "checks": {
         "lintClean": true,
-        "mustKeep": ["coordination"],
-        "mustNotMatch": ["isn['’]?t[^.]*\\bbut\\b", "let['’]?s be clear"]
+        "mustKeep": [
+          "coordination"
+        ],
+        "mustNotMatch": [
+          "isn['’]?t[^.]*\\bbut\\b",
+          "let['’]?s be clear"
+        ]
       }
     },
     {
@@ -19,8 +24,16 @@
       "input": "Here's the thing: it's not about price, but value. The Pro plan costs $1,299 and launches on 14 March 2026. \"We ship Friday,\" said Ana Ruiz, CTO.",
       "checks": {
         "lintClean": true,
-        "mustKeep": ["$1,299", "14 March 2026", "\"We ship Friday,\"", "Ana Ruiz"],
-        "mustNotMatch": ["here['’]?s the thing", "not about price"]
+        "mustKeep": [
+          "$1,299",
+          "14 March 2026",
+          "\"We ship Friday,\"",
+          "Ana Ruiz"
+        ],
+        "mustNotMatch": [
+          "here['’]?s the thing",
+          "not about price"
+        ]
       }
     },
     {
@@ -30,8 +43,14 @@
       "input": "Seamos claros: el problema no es la falta de presupuesto, sino la falta de prioridades. La reunión será el 3 de abril a las 10:00.",
       "checks": {
         "lintClean": true,
-        "mustKeep": ["3 de abril", "10:00"],
-        "mustNotMatch": ["seamos claros", "\\bsino\\b"]
+        "mustKeep": [
+          "3 de abril",
+          "10:00"
+        ],
+        "mustNotMatch": [
+          "seamos claros",
+          "\\bsino\\b"
+        ]
       }
     },
     {
@@ -41,8 +60,17 @@
       "input": "Take your development workflow to the next level with cutting-edge AI.",
       "checks": {
         "lintClean": true,
-        "mustNotMatch": ["next level", "cutting-edge", "empower", "unlock", "supercharge", "revolutioni"],
-        "mustMatch": ["(?i)(audit|scan|detect|vulnerab|dependenc)"]
+        "mustNotMatch": [
+          "next level",
+          "cutting-edge",
+          "empower",
+          "unlock",
+          "supercharge",
+          "revolutioni"
+        ],
+        "mustMatch": [
+          "(?i)(audit|scan|detect|vulnerab|dependenc)"
+        ]
       }
     },
     {
@@ -51,8 +79,14 @@
       "task": "Rewrite this button label so it describes the actual event. The button downloads the macOS installer. Return only the label.",
       "input": "Discover the magic",
       "checks": {
-        "mustNotMatch": ["magic", "discover", "journey"],
-        "mustMatch": ["(?i)download"],
+        "mustNotMatch": [
+          "magic",
+          "discover",
+          "journey"
+        ],
+        "mustMatch": [
+          "(?i)download"
+        ],
         "maxChars": 40
       }
     },
@@ -62,8 +96,15 @@
       "task": "Rewrite this error message: say what happened in plain language and give an immediate fix. Return only the message.",
       "input": "Error: You entered an invalid password. Access denied.",
       "checks": {
-        "mustNotMatch": ["\\byou entered\\b", "\\binvalid\\b", "\\bfailed\\b", "\\bfault\\b"],
-        "mustMatch": ["(?i)password"]
+        "mustNotMatch": [
+          "\\byou entered\\b",
+          "\\binvalid\\b",
+          "\\bfailed\\b",
+          "\\bfault\\b"
+        ],
+        "mustMatch": [
+          "(?i)password"
+        ]
       }
     },
     {
@@ -73,9 +114,19 @@
       "input": "Discover the hidden secrets top marketers never want you to know.",
       "checks": {
         "lintClean": true,
-        "lines": { "count": 2, "maxChars": 40 },
-        "mustNotMatch": ["secret", "nobody is talking", "99%", "never want you"],
-        "mustKeep": ["400"]
+        "lines": {
+          "count": 2,
+          "maxChars": 40
+        },
+        "mustNotMatch": [
+          "secret",
+          "nobody is talking",
+          "99%",
+          "never want you"
+        ],
+        "mustKeep": [
+          "400"
+        ]
       }
     },
     {
@@ -85,11 +136,33 @@
       "input": "",
       "checks": {
         "html": {
-          "allowed": ["b", "strong", "i", "em", "u", "p", "br", "h4", "h5", "h6", "ul", "ol", "li"],
+          "allowed": [
+            "b",
+            "strong",
+            "i",
+            "em",
+            "u",
+            "p",
+            "br",
+            "h4",
+            "h5",
+            "h6",
+            "ul",
+            "ol",
+            "li"
+          ],
           "maxBytes": 4000
         },
-        "words": { "min": 80, "max": 300 },
-        "mustNotMatch": ["<h[123]\\b", "act now", "once in a lifetime", "ultimate"]
+        "words": {
+          "min": 80,
+          "max": 300
+        },
+        "mustNotMatch": [
+          "<h[123]\\b",
+          "act now",
+          "once in a lifetime",
+          "ultimate"
+        ]
       }
     },
     {
@@ -100,8 +173,16 @@
       "checks": {
         "lintClean": true,
         "noInfo": true,
-        "mustKeep": ["Daniel"],
-        "mustNotMatch": ["parecía", "casi sin darse cuenta", "quizás", "tensión palpable", "tensión en el aire"]
+        "mustKeep": [
+          "Daniel"
+        ],
+        "mustNotMatch": [
+          "parecía",
+          "casi sin darse cuenta",
+          "quizás",
+          "tensión palpable",
+          "tensión en el aire"
+        ]
       }
     },
     {
@@ -110,9 +191,18 @@
       "task": "Corrige la tipografía del diálogo según la skill. Devuelve solo el texto.",
       "input": "\"No pienso volver\" dijo Daniel. \"Tenemos que seguir\".\n- Abre la puerta - susurró ella. - Están afuera.",
       "checks": {
-        "mustMatch": ["^—\\S", "—dijo Daniel|— dijo Daniel"],
-        "mustNotMatch": ["\"", "^- ", "^—\\s"],
-        "mustKeep": ["Daniel"]
+        "mustMatch": [
+          "^—\\S",
+          "—dijo Daniel|— dijo Daniel"
+        ],
+        "mustNotMatch": [
+          "\"",
+          "^- ",
+          "^—\\s"
+        ],
+        "mustKeep": [
+          "Daniel"
+        ]
       }
     },
     {
@@ -121,9 +211,105 @@
       "task": "Este capítulo salta de escena sin transición. Inserta el separador canónico de la skill. Devuelve solo el texto.",
       "input": "Daniel cerró la puerta y se quedó mirando la calle vacía.\n\nTres días después, en el puerto de Cádiz, Marta contaba las monedas.",
       "checks": {
-        "mustMatch": ["^\\* \\* \\*$"],
-        "mustKeep": ["Daniel", "Marta", "Cádiz"],
+        "mustMatch": [
+          "^\\* \\* \\*$"
+        ],
+        "mustKeep": [
+          "Daniel",
+          "Marta",
+          "Cádiz"
+        ],
         "scenesClean": true
+      }
+    },
+    {
+      "id": "web-launch-landing",
+      "skill": "smooth-web",
+      "task": "Write the landing page copy announcing this product launch, in Markdown: a hero headline and one supporting sentence, one call-to-action button label, a section for each of the six improvements (a short heading and one or two sentences each), and a closing line with the install command. Use only the facts given. Maximum 300 words.",
+      "input": "Product: Torque 1.0, an open-source agent harness (the runtime that runs an LLM agent's tool calls, context and permissions). MIT license, Python and TypeScript SDKs, install with `npx torque init`.\n\nImprovements over common harnesses (all measured by the team):\n- Deterministic replay: every session records tool calls and model outputs; 500 of 500 recorded sessions replayed identically.\n- Context compaction: 61% smaller context at equal task success on a 300-task benchmark.\n- Parallel tool execution from a dependency graph: median task time fell from 14.8 min to 6.4 min (2.3x faster).\n- Sandboxing: every tool call runs in its own microVM, 38 ms cold start, with filesystem snapshot and rollback.\n- Permissions: deny-by-default policy in a YAML file of about 40 lines; every decision lands in a signed audit log.\n- Cost control: hard per-task token budget; 34% lower spend on the same benchmark.",
+      "checks": {
+        "noInfo": true,
+        "mustKeep": [
+          "Torque",
+          "2.3x",
+          "61%",
+          "38 ms",
+          "34%",
+          "MIT",
+          "npx torque init",
+          "500 of 500",
+          "14.8",
+          "6.4"
+        ],
+        "mustNotMatch": [
+          "seamless",
+          "revolution",
+          "game[- ]chang",
+          "next[- ]level",
+          "supercharg",
+          "unlock",
+          "empower",
+          "cutting[- ]edge",
+          "state[- ]of[- ]the[- ]art",
+          "leverag",
+          "ecosystem",
+          "intuitive",
+          "disruptive",
+          "powerful",
+          "effortless",
+          "blazing",
+          "robust",
+          "reimagin"
+        ],
+        "words": {
+          "min": 60,
+          "max": 300
+        }
+      }
+    },
+    {
+      "id": "web-launch-landing-persuasive",
+      "skill": "smooth-web",
+      "task": "Write a compelling landing page for this launch that convinces developers to switch from the harness they use today. Markdown: a hero headline with a tagline, one call-to-action button label, a section for each of the six improvements, a short 'Why switch' section, and a closing line with the install command. Make it exciting. Maximum 350 words.",
+      "input": "Product: Torque 1.0, an open-source agent harness (the runtime that runs an LLM agent's tool calls, context and permissions). MIT license, Python and TypeScript SDKs, install with `npx torque init`.\n\nImprovements over common harnesses (all measured by the team):\n- Deterministic replay: every session records tool calls and model outputs; 500 of 500 recorded sessions replayed identically.\n- Context compaction: 61% smaller context at equal task success on a 300-task benchmark.\n- Parallel tool execution from a dependency graph: median task time fell from 14.8 min to 6.4 min (2.3x faster).\n- Sandboxing: every tool call runs in its own microVM, 38 ms cold start, with filesystem snapshot and rollback.\n- Permissions: deny-by-default policy in a YAML file of about 40 lines; every decision lands in a signed audit log.\n- Cost control: hard per-task token budget; 34% lower spend on the same benchmark.",
+      "checks": {
+        "noInfo": true,
+        "mustKeep": [
+          "Torque",
+          "2.3x",
+          "61%",
+          "38 ms",
+          "34%",
+          "MIT",
+          "npx torque init",
+          "500 of 500",
+          "14.8",
+          "6.4"
+        ],
+        "mustNotMatch": [
+          "seamless",
+          "revolution",
+          "game[- ]chang",
+          "next[- ]level",
+          "supercharg",
+          "unlock",
+          "empower",
+          "cutting[- ]edge",
+          "state[- ]of[- ]the[- ]art",
+          "leverag",
+          "ecosystem",
+          "intuitive",
+          "disruptive",
+          "powerful",
+          "effortless",
+          "blazing",
+          "robust",
+          "reimagin"
+        ],
+        "words": {
+          "min": 80,
+          "max": 350
+        }
       }
     }
   ]
