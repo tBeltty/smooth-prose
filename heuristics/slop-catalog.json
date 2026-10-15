@@ -152,6 +152,26 @@
       "regex": "\\b(?:(?:seemed|appeared|seems|appears)\\s+to\\b|almost\\s+as\\s+if|as\\s+if\\s+(?:it|he|she|they)\\s+(?:were|was)|without\\s+(?:quite\\s+)?realizing|(?:he|she|they)\\s+(?:could\\s+)?(?:almost|nearly)\\s+(?:feel|hear|see|taste)|(?:perhaps|maybe)\\s+(?:he|she|they|it)\\s+(?:felt|was|were))",
       "flags": "gi",
       "fix": "Use the direct assertive verb (resisted, felt, advanced)."
+    },
+    {
+      "id": "landing-cliche-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Landing-Page Cliché",
+      "regex": "\\b(?:keeps?\\s+(?:your\\s+)?\\w+\\s+on\\s+(?:course|track)|built\\s+for\\s+(?:real|serious|modern)\\s+\\w+|set\\s+sail|(?:a|the)\\s+(?:real\\s+|big\\s+|huge\\s+|giant\\s+)?step\\s+up\\b|nothing\\s+(?:is\\s+)?hidden|everything\\s+(?:an?\\s+\\w+|your\\s+\\w+)\\s+needs?|(?:finish|finishes|get|gets)\\s+the\\s+job(?:\\s+done)?|from\\s+(?:an?\\s+)?idea\\s+to\\s+(?:an?\\s+)?(?:running|working|production|live)|so\\s+you\\s+can\\s+focus\\s+on\\s+what\\s+(?:really\\s+|actually\\s+)?(?:matters|counts)|ship\\s+\\w+\\s+(?:you|that)\\s+(?:actually\\s+)?trust|whether\\s+you(?:['’]re|\\s+are)\\s+a\\b)",
+      "flags": "gi",
+      "fix": "Say what the product does in one concrete sentence; cut the slogan."
+    },
+    {
+      "id": "social-proof-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Unsupported Social Proof",
+      "regex": "\\b(?:why\\s+(?:teams|developers|engineers|companies|people)\\s+(?:love|choose|trust|move\\s+to|switch\\s+to|use)\\s+\\w+|(?:trusted|loved|used)\\s+by\\s+(?:thousands|hundreds|millions|teams|developers|engineers|leading|top)|(?:teams|developers|engineers)\\s+(?:love|trust)\\s+\\w+|join\\s+(?:thousands|hundreds|millions|\\d[\\d,]*)\\s+(?:of\\s+)?(?:teams|developers|engineers|users)|what\\s+(?:our\\s+)?(?:customers|users|developers)\\s+(?:are\\s+)?say(?:ing)?)\\b",
+      "flags": "gi",
+      "fix": "Remove it, or replace it with a named customer, a number and a source you can show."
     }
   ],
   "quotas": {

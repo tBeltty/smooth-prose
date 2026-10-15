@@ -34,7 +34,7 @@ const HYPE = [
 
 // The vague scenario uses a product name that appears nowhere in this repo: agents run with the repo as working
 // directory and will grep it, and a first attempt with "Torque" found the fixtures in tests/ and used them.
-const VAGUE_PRODUCT = 'Halyard';
+const VAGUE_PRODUCT = process.env.NAIVE_PRODUCT || 'Halyard';
 const VAGUE_REQUEST = (dir) => `Make me a landing page for ${VAGUE_PRODUCT} 1.0, our new agent harness. It's a big step up from the usual harnesses. Save it as ${dir}/index.html.`;
 
 const REQUEST = (dir) => `Make me a landing page for Torque 1.0, our new agent harness. Save it as ${dir}/index.html.

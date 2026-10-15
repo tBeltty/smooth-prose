@@ -73,6 +73,10 @@ Reading the pages shows a clear difference the metrics miss. Bare runs wrote mar
 
 Residual leak: two vague-rerun agents read `tests/naive/naive.mjs`, which still contains the grounded Torque request, but neither page uses those facts.
 
+**Rules from the reading, and an out-of-sample check.** The reading above led to two English rules, `landing-cliche-en` and `social-proof-en`. Scoring the pages they were written from proves nothing, so a fresh vague run with a different product name was done (3 bare, 3 full install): the new rules flagged all 3 bare pages (2.7 issues on average, for phrases such as "built for real work", "Everything an agent needs", "a step up") and none of the 3 full-install pages. The rules also flag nothing in the repo docs or in the 9 grounded-request pages. The limit: it is the same small model, repeating its own stock phrases, so this shows the rules generalize within that model only.
+
+A landing page produced by a larger anonymous model for a similar request was linted as well: 0 issues. It is dense with slop of a different kind (fabricated metrics such as "14.2x" and "99.98% nominal", "industrial-grade", "outclasses primitive script-based libraries", competitor strawmen, "Certified secure"), and none of it matches the current rules. Detecting unsupported metrics and competitor strawmen deterministically is not covered yet.
+
 ### Bugs the tests found
 
 The tests led to fixes for: missing English coverage (README examples were not detected), the linter not using the rule catalog, throat-clearing line numbers off by one, `init` ignoring script failures, a dead `$schema` URL written into generated configs, a wrong KDP tag count in the README (12 vs 13), and the scene-break auditor missing relative time jumps such as "Three days later".
