@@ -1,0 +1,205 @@
+{
+  "description": "Lexicons used by lexicon_audit.py and audit_scene_breaks.py. One block per language.",
+  "es": {
+    "overused": {
+      "sombra": [
+        "penumbra",
+        "negrura",
+        "silueta",
+        "contorno",
+        "oscuridad",
+        "tinieblas"
+      ],
+      "sombras": [
+        "penumbras",
+        "negruras",
+        "siluetas",
+        "tinieblas"
+      ],
+      "polvo": [
+        "hollín",
+        "herrumbre",
+        "ceniza",
+        "partículas flotantes",
+        "tierra seca",
+        "pátina"
+      ],
+      "polvoriento": [
+        "enmohecido",
+        "cubierto de ceniza",
+        "gastado",
+        "descolorido"
+      ],
+      "aire": [
+        "atmósfera",
+        "ambiente",
+        "brisa",
+        "corriente",
+        "humo",
+        "éter"
+      ],
+      "tensión": [
+        "crispación",
+        "rigidez",
+        "silencio expectante",
+        "fricción"
+      ],
+      "refugio": [
+        "guarida",
+        "madriguera",
+        "bastión",
+        "escondite",
+        "rincón seguro"
+      ]
+    },
+    "weakeners": [
+      "parecía",
+      "parecían",
+      "quizás",
+      "quizá",
+      "tal vez",
+      "casi",
+      "podría",
+      "podrían",
+      "como si fuera"
+    ],
+    "binary_contrast": [
+      {
+        "regex": "\\bno\\s+[^.,;:—\\n]+[,;—]?\\s+sino\\b",
+        "label": "no ... sino ..."
+      },
+      {
+        "regex": "\\bno\\s+por\\s+[^.,;:—\\n]+[,;—]?\\s+sino\\b",
+        "label": "no por ... sino ..."
+      },
+      {
+        "regex": "\\bno\\s+era\\s+[^.,;:—\\n]+[,;—]?\\s+era\\b",
+        "label": "no era ... era ..."
+      },
+      {
+        "regex": "\\bno\\s+se\\s+trata\\s+de\\b",
+        "label": "no se trata de ..."
+      }
+    ],
+    "banned": [
+      "expolio",
+      "alféizar",
+      "proclama",
+      "omnipresente",
+      "catalizador"
+    ],
+    "dialogue_em_dash": true,
+    "scene_openers": [
+      "^(Al otro lado|Lejos de all[ií]|En otra parte)",
+      "^(La comisar[ií]a|El refugio|El dep[oó]sito|El teatro|El mercado|El callej[oó]n|La guarida|El almac[eé]n|La torre|El muelle|Las cloacas|La habitaci[oó]n|La sala|El s[oó]tano)",
+      "^(En la comisar[ií]a|En el refugio|En el dep[oó]sito|En el teatro|En el mercado|En el muelle|En la habitaci[oó]n|En el despacho|En la cocina)",
+      "^(Horas m[aá]s tarde|Minutos despu[eé]s|Al caer la noche|Al anochecer|A la ma[ñn]ana siguiente|A medianoche|El d[ií]a siguiente|A la madrugada|Poco despu[eé]s)",
+      "^(Mientras tanto|Entretanto)",
+      "^(En una celda|En un rinc[oó]n|Bajo los escombros|Desde las alturas)",
+      "^(?:\\w+\\s+){0,3}(?:d[ií]as|semanas|meses|a[ñn]os|horas|minutos)\\s+(?:despu[eé]s|m[aá]s\\s+tarde|antes)",
+      "^(?:Un|Una)\\s+(?:d[ií]a|semana|mes|a[ñn]o|hora)\\s+(?:despu[eé]s|m[aá]s\\s+tarde)",
+      "^(?:Al\\s+(?:d[ií]a|mes|a[ñn]o)\\s+siguiente|Al\\s+cabo\\s+de|Esa\\s+(?:noche|ma[ñn]ana|tarde)|Aquella\\s+(?:noche|ma[ñn]ana|tarde)|Ya\\s+de\\s+d[ií]a)"
+    ]
+  },
+  "en": {
+    "overused": {
+      "shadow": [
+        "gloom",
+        "silhouette",
+        "outline",
+        "darkness",
+        "dusk"
+      ],
+      "shadows": [
+        "gloom",
+        "silhouettes",
+        "outlines",
+        "dusk"
+      ],
+      "dust": [
+        "soot",
+        "rust",
+        "ash",
+        "dry earth",
+        "grit",
+        "patina"
+      ],
+      "dusty": [
+        "ashen",
+        "rusted",
+        "worn",
+        "faded"
+      ],
+      "air": [
+        "atmosphere",
+        "breeze",
+        "draft",
+        "smoke",
+        "stillness"
+      ],
+      "tension": [
+        "strain",
+        "stiffness",
+        "held breath",
+        "friction"
+      ],
+      "refuge": [
+        "den",
+        "burrow",
+        "bastion",
+        "hideout",
+        "safe corner"
+      ]
+    },
+    "weakeners": [
+      "seemed",
+      "seems",
+      "appeared",
+      "appears",
+      "perhaps",
+      "maybe",
+      "almost",
+      "nearly",
+      "somewhat",
+      "as if",
+      "as though",
+      "sort of",
+      "kind of"
+    ],
+    "binary_contrast": [
+      {
+        "regex": "\\b(?:it['’]?s|it\\s+is)\\s+not\\s+(?:about|just|only|merely|simply)\\s+[^.,;:—\\n]+[,;—]?\\s*(?:but\\s+|it['’]?s\\s+|it\\s+is\\s+)",
+        "label": "it's not X, it's Y"
+      },
+      {
+        "regex": "\\b(?:isn['’]?t|is\\s+not|wasn['’]?t|was\\s+not|aren['’]?t|are\\s+not|weren['’]?t)\\s+(?:just\\s+|only\\s+)?(?:an?\\s+|the\\s+)?[^.,;:—\\n]{2,60},\\s*but\\s+",
+        "label": "isn't X, but Y"
+      },
+      {
+        "regex": "\\bnot\\s+(?:just|only|merely|simply)\\s+[^.,;:—\\n]+,?\\s*but\\s+(?:also\\s+)?",
+        "label": "not just X, but Y"
+      },
+      {
+        "regex": "\\bnot\\s+because\\s+[^.,;:—\\n]+,?\\s*but\\s+because\\b",
+        "label": "not because X, but because Y"
+      }
+    ],
+    "banned": [
+      "ubiquitous",
+      "catalyst",
+      "plethora",
+      "myriad",
+      "multifaceted",
+      "tapestry",
+      "delve",
+      "testament"
+    ],
+    "dialogue_em_dash": false,
+    "scene_openers": [
+      "^(?:Meanwhile|Elsewhere|Across\\s+town|Far\\s+away|Back\\s+at|Back\\s+in|Somewhere\\s+else)\\b",
+      "^(?:\\w+\\s+){0,3}(?:days?|weeks?|months?|years?|hours?|minutes?)\\s+(?:later|earlier|before|after)\\b",
+      "^(?:A|One)\\s+(?:day|week|month|year|hour)\\s+later\\b",
+      "^(?:The\\s+(?:next|following)\\s+(?:day|morning|evening|night|week)|That\\s+(?:night|evening|morning|afternoon)|Later\\s+that\\s+(?:day|night|week|evening)|By\\s+(?:morning|nightfall|dawn|noon)|At\\s+(?:dawn|dusk|midnight|nightfall))\\b"
+    ]
+  }
+}

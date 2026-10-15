@@ -1,20 +1,199 @@
 #!/usr/bin/env python3
 """
-scripts/init_project.py - Protocolo de Inicialización y Calibración Condicional para Smooth Prose.
-Ejecuta una máquina de estados estrictamente secuencial y condicional:
-  1. Selección de Dominio (Literatura, Marketing, Web, Universal).
-  2. Ramas Condicionales Exclusivas:
-     - Literatura  -> Escaneo e Inspección de Lore (personajes, cuotas léxicas, metáforas prohibidas) + Matriz_PreVuelo.md.
-     - Marketing   -> Canales, KDP (4.000 car.), fórmulas de ganchos, fact-shielding.
-     - Web         -> Microcopy UI, Hero standard, empty states.
-     - Universal   -> Guardarraíl global omnidireccional para todo el copy del repositorio.
+scripts/init_project.py - Onboarding and conditional calibration protocol for Smooth Prose (EN | ES).
+Runs a strictly sequential, conditional state machine:
+  1. Domain selection (Literature, Marketing, Web, Universal).
+  2. Exclusive conditional branches:
+     - Literature  -> Lore inspection (characters, lexical quotas, banned metaphors) + pre-flight matrix.
+     - Marketing   -> Channels, KDP (4,000 chars), hook formulas, fact-shielding.
+     - Web         -> UI microcopy, Hero standard, empty states.
+     - Universal   -> Global guardrail for all copy in the repository.
+The interface language follows --lang, SMOOTH_PROSE_LANG or the system locale.
 """
 
 import os, sys, json, re, argparse
 from collections import Counter
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import i18n
+
+LEXICON = i18n.load_heuristics("lexicon.json")
+
+STR = {
+    "en": {
+        "desc": "Smooth Prose project initializer",
+        "mode_help": "Preset editorial mode",
+        "ni_help": "Run without interactive prompts",
+        "lang_help": "Interface and defaults language: en|es",
+        "banner": "🪶 SMOOTH PROSE: ONBOARDING AND CONFIGURATION PROTOCOL",
+        "step1": "[Step 1/2] What is the editorial scope of this project?",
+        "opt1": "  1) Universal / All Copy (audit any text generated in the repository)",
+        "opt2": "  2) Literature / Narrative Fiction (novels, stories, lore and characters)",
+        "opt3": "  3) Copywriting & Marketing (Amazon KDP blurbs, hooks, newsletters)",
+        "opt4": "  4) Web Design & Product (UI/UX copy, interface microcopy, landing pages)",
+        "select": "\nSelect [1-4] (default 1): ",
+        "mode_on": "\n✔ Mode activated: {m}",
+        "uni_h": "\n[Step 2/2: Universal Mode]",
+        "uni_1": "Configuring guardrails to audit all copy in the repository...",
+        "uni_2": "  ✔ Active filters: zero binary contrasts («not X, but Y»), zero throat-clearing, cadence linter.",
+        "lit_h": "\n[Step 2/2: Literature Mode — Lore and Style Inspection]",
+        "lit_scan": "  Analyzing {n} existing files to detect Lore entities...",
+        "lit_found": "\n  Entities and characters detected automatically:",
+        "lit_confirm": "\n  Confirm these entities for 'Lore Protection'? [Y/n]: ",
+        "lit_yes": ["", "y", "yes", "s", "si", "sí"],
+        "lit_custom": "  Type the protected entities separated by commas: ",
+        "lit_custom2": "  Type the protected characters or factions (comma-separated): ",
+        "lit_matrix": "  ✔ Narrative pre-flight matrix generated: {f}",
+        "mkt_h": "\n[Step 2/2: Marketing Mode — Channels and Conversion]",
+        "mkt_1": "  ✔ Amazon KDP restrictions and two-line hooks enabled.",
+        "web_h": "\n[Step 2/2: Web Mode — UI/UX Copy & Microcopy]",
+        "web_1": "  ✔ Actionable microcopy rules and empty-slogan ban enabled.",
+        "saved": "\n✔ Configuration file generated: {f}",
+        "done": "   ✅ ONBOARDING COMPLETED SUCCESSFULLY",
+        "cmds": "Commands available in this project:",
+        "c_audit": "  smooth-prose audit <file>   -> Lexicon and project-rule audit",
+        "c_lint": "  smooth-prose lint <file>    -> Deterministic cliché and cadence linter",
+        "c_scenes": "  smooth-prose scenes <file>  -> Blind-cut detection (dinkus * * *)",
+        "c_record": "  smooth-prose record <ch> <cat> <text> -> Canonical metaphor registry",
+        "no_entities": "None registered yet (update with smooth-prose init)",
+        "matrix": """# Narrative Pre-Flight Matrix (Smooth Prose)
+> **Project:** {project}
+> **Mode:** Literature / Narrative Fiction
+> **Guardrail:** Lore Protection Active
+
+---
+
+## 1. Protected Lore Entities
+* **Canonical list:** {entities}
+* **Inviolable rule:** No collaborator or assistant may rename these entities, alter their species/nature, or reinterpret their core motivations.
+
+---
+
+## 2. Mandatory Pre-Writing Vectors
+
+### A. Diegetic Timeline
+* Fix the canonical day ($T = X$ days elapsed since the start).
+* Wrong relative time references are forbidden (*"that morning"*).
+
+### B. Lexical Quotas per Chapter
+* `shadow / shadows`: at most 2 mentions per chapter.
+* `dust`: alternate with *soot, rust, ash, floating particles*.
+* `air / tension`: describe through bodily physiology (dryness, raised hairs, trembling), never with inert abstractions.
+
+### C. Weakeners (Horacio Quiroga's Decalogue)
+* Purge doubt verbs (*seemed, perhaps, almost*). Assert with direct force.
+
+### D. Dialogue and Scene Orthotypography
+* Dialogue formatting follows the project's language convention (Spanish: RAE em-dash `—` attached to the first letter).
+* Scene breaks delimited with a **Dinkus** (`* * *`) and an unindented paragraph after.
+
+### E. Zero AI Slop
+* Absolute ban on binary contrasts (*"not X, but Y"*).
+* Zero theatrical throat-clearing (*"Here's the thing"*).
+""",
+    },
+    "es": {
+        "desc": "Inicializador de proyecto Smooth Prose",
+        "mode_help": "Modo editorial predefinido",
+        "ni_help": "Modo sin preguntas interactivas",
+        "lang_help": "Idioma de la interfaz y de los valores por defecto: en|es",
+        "banner": "🪶 SMOOTH PROSE: PROTOCOLO DE ONBOARDING Y CONFIGURACIÓN",
+        "step1": "[Paso 1/2] ¿Cuál es el alcance editorial de este proyecto?",
+        "opt1": "  1) Universal / Todo el Copy (Auditar cualquier texto generado en el repositorio)",
+        "opt2": "  2) Literatura / Ficción Narrativa (Novelas, relatos, lore y personajes)",
+        "opt3": "  3) Copywriting & Marketing (Amazon KDP blurbs, ganchos, newsletters)",
+        "opt4": "  4) Diseño Web & Producto (UI/UX copy, microcopy de interfaces, landings)",
+        "select": "\nSelecciona [1-4] (por defecto 1): ",
+        "mode_on": "\n✔ Modo activado: {m}",
+        "uni_h": "\n[Paso 2/2: Modo Universal]",
+        "uni_1": "Configurando guardarraíles para auditar todo el copy del repositorio...",
+        "uni_2": "  ✔ Filtros activos: Zero contrastes binarios («no X, sino Y»), cero carraspeos, linter de cadencia.",
+        "lit_h": "\n[Paso 2/2: Modo Literatura — Inspección de Lore y Estilo]",
+        "lit_scan": "  Analizando {n} archivos existentes para detectar entidades de Lore...",
+        "lit_found": "\n  Entidades y personajes detectados automáticamente:",
+        "lit_confirm": "\n  ¿Confirmar estas entidades para 'Protección de Lore'? [S/n]: ",
+        "lit_yes": ["", "s", "si", "sí", "y", "yes"],
+        "lit_custom": "  Escribe las entidades protegidas separadas por coma: ",
+        "lit_custom2": "  Escribe los personajes o facciones protegidas (separados por coma): ",
+        "lit_matrix": "  ✔ Matriz de Pre-Vuelo narrativa generada: {f}",
+        "mkt_h": "\n[Paso 2/2: Modo Marketing — Canales y Conversión]",
+        "mkt_1": "  ✔ Restricciones de Amazon KDP y ganchos de 2 líneas activadas.",
+        "web_h": "\n[Paso 2/2: Modo Web — UI/UX Copy & Microcopy]",
+        "web_1": "  ✔ Reglas de microcopy accionable y prohibición de eslóganes vacíos activadas.",
+        "saved": "\n✔ Archivo de configuración generado: {f}",
+        "done": "   ✅ ONBOARDING FINALIZADO CON ÉXITO",
+        "cmds": "Comandos disponibles en este proyecto:",
+        "c_audit": "  smooth-prose audit <archivo>   -> Auditoría de léxico y reglas de proyecto",
+        "c_lint": "  smooth-prose lint <archivo>    -> Linter determinista de clichés y cadencia",
+        "c_scenes": "  smooth-prose scenes <archivo>  -> Detección de cortes ciegos (dinkus * * *)",
+        "c_record": "  smooth-prose record <cap> <cat> <texto> -> Registro de metáforas canónicas",
+        "no_entities": "Ninguna registrada inicialmente (actualizar con smooth-prose init)",
+        "matrix": """# Matriz de Pre-Vuelo Narrativa (Smooth Prose)
+> **Proyecto:** {project}
+> **Modo:** Literatura / Ficción Narrativa
+> **Guardarraíl:** Protección de Lore Activa
+
+---
+
+## 1. Entidades de Lore Protegidas
+* **Lista Canónica:** {entities}
+* **Regla Inviolable:** Ningún colaborador o asistente puede renombrar, alterar la especie/naturaleza ni reinterpretar las motivaciones fundamentales de estas entidades.
+
+---
+
+## 2. Vectores Obligatorios Pre-Redacción
+
+### A. Línea Temporal Diegética
+* Fijar el día canónico ($T = X$ días transcurridos desde el inicio).
+* Prohibidas referencias temporales relativas erróneas (*«aquella mañana»*).
+
+### B. Cuotas Léxicas por Capítulo
+* `sombra / sombras`: Máximo 2 menciones por capítulo.
+* `polvo`: Alternar con *hollín, herrumbre, ceniza, partículas flotantes*.
+* `aire / tensión`: Describir mediante fisiología corporal (sequedad, erizamiento del lomo, temblor), jamás con abstracciones inertes.
+
+### C. Atenuadores (Decálogo de Horacio Quiroga)
+* Purgar verbos de duda (*parecía, quizás, casi*). Afirmar con fuerza directa.
+
+### D. Ortotipografía de Diálogos y Escenas
+* Diálogos exclusivamente con raya RAE (`—`, U+2014) unida a la primera letra.
+* Saltos de escena delimitados con **Dinkus** (`* * *`) y párrafo posterior sin sangría.
+
+### E. Zero AI Slop
+* Prohibición absoluta de contrastes binarios (*«no X, sino Y»*).
+* Cero carraspeos teatrales (*«Aquí está el detalle»*).
+""",
+    },
+}
+
+# Language-specific defaults written to the generated config
+DEFAULTS = {
+    "en": {
+        "quotas": {
+            "shadow": {"max": 2, "alternatives": ["gloom", "silhouette", "darkness", "dusk"]},
+            "shadows": {"max": 2, "alternatives": ["gloom", "silhouettes", "dusk"]},
+            "dust": {"max": 3, "alternatives": ["soot", "rust", "ash", "dry earth"]},
+            "refuge": {"max": 2, "alternatives": ["den", "bastion", "hideout"]},
+        },
+        "banned_lexicon": ["ubiquitous", "catalyst", "plethora", "myriad", "multifaceted"],
+        "buzzwords": ["revolutionary", "take it to the next level", "unlimited potential", "ultimate experience"],
+        "stopwords": {"this", "that", "these", "those", "when", "then", "after", "before", "chapter", "part", "book", "there", "their", "with", "from"},
+    },
+    "es": {
+        "quotas": {
+            "sombra": {"max": 2, "alternatives": ["penumbra", "negrura", "silueta", "tinieblas"]},
+            "sombras": {"max": 2, "alternatives": ["penumbras", "negruras", "siluetas"]},
+            "polvo": {"max": 3, "alternatives": ["hollín", "herrumbre", "ceniza", "tierra seca"]},
+            "refugio": {"max": 2, "alternatives": ["guarida", "bastión", "escondite"]},
+        },
+        "banned_lexicon": ["expolio", "catalizador", "alféizar", "omnipresente", "proclama"],
+        "buzzwords": ["revolucionario", "eleva tu flujo", "potencial ilimitado", "experiencia definitiva"],
+        "stopwords": {"para", "como", "pero", "este", "esta", "estos", "estas", "todos", "todas", "cuando", "entre", "sobre", "desde", "hasta", "donde", "quien", "porque", "entonces", "después", "luego", "capítulo", "parte", "libro"},
+    },
+}
+
 
 def scan_existing_files(directory=".", extensions=(".md", ".txt", ".docx")):
-    """Busca archivos de texto excluyendo carpetas de build/dependencias."""
+    """Finds text files, skipping build/dependency folders."""
     text_files = []
     for root, _, files in os.walk(directory):
         if any(skip in root for skip in [".git", "node_modules", "dist", ".cache", "venv", "__pycache__"]):
@@ -24,10 +203,11 @@ def scan_existing_files(directory=".", extensions=(".md", ".txt", ".docx")):
                 text_files.append(os.path.join(root, f))
     return text_files
 
-def extract_candidate_lore(files):
-    """Extrae candidatos a nombres propios / personajes solo para modo literatura."""
+
+def extract_candidate_lore(files, lang):
+    """Extracts proper-name / character candidates (literature mode only)."""
     capitalized_words = Counter()
-    stopwords = {"para", "como", "pero", "este", "esta", "estos", "estas", "todos", "todas", "cuando", "entre", "sobre", "desde", "hasta", "donde", "quien", "porque", "entonces", "después", "luego", "capítulo", "parte", "libro"}
+    stopwords = DEFAULTS["es"]["stopwords"] | DEFAULTS["en"]["stopwords"] if lang == "all" else DEFAULTS[lang]["stopwords"]
 
     for fpath in files[:12]:
         try:
@@ -54,39 +234,38 @@ def extract_candidate_lore(files):
 
     return [word for word, count in capitalized_words.most_common(15) if count >= 2]
 
-def run_init(mode_override=None, non_interactive=False):
+
+def generate_literature_matrix(project_name, entities, lang):
+    S = STR[lang]
+    ent_str = ", ".join(entities) if entities else S["no_entities"]
+    return S["matrix"].format(project=project_name, entities=ent_str)
+
+
+def run_init(mode_override=None, non_interactive=False, lang="en"):
+    S, D = STR[lang], DEFAULTS[lang]
     print("\n" + "=" * 68)
-    print("   🪶 SMOOTH PROSE: PROTOCOLO DE ONBOARDING Y CONFIGURACIÓN")
+    print(f"   {S['banner']}")
     print("=" * 68)
 
-    # PASO 1: Diagnóstico de Dominio Principal
+    # STEP 1: primary domain
     if mode_override:
         mode = mode_override
     elif non_interactive:
         mode = "universal"
     else:
-        print("\n[Paso 1/2] ¿Cuál es el alcance editorial de este proyecto?")
-        print("  1) Universal / Todo el Copy (Auditar cualquier texto generado en el repositorio)")
-        print("  2) Literatura / Ficción Narrativa (Novelas, relatos, lore y personajes)")
-        print("  3) Copywriting & Marketing (Amazon KDP blurbs, ganchos, newsletters)")
-        print("  4) Diseño Web & Producto (UI/UX copy, microcopy de interfaces, landings)")
+        print(f"\n{S['step1']}")
+        for k in ("opt1", "opt2", "opt3", "opt4"):
+            print(S[k])
+        choice = input(S["select"]).strip() or "1"
+        mode = {"1": "universal", "2": "literature", "3": "marketing", "4": "web"}.get(choice, "universal")
 
-        choice = input("\nSelecciona [1-4] (por defecto 1): ").strip() or "1"
-        mode_map = {
-            "1": "universal",
-            "2": "literature",
-            "3": "marketing",
-            "4": "web"
-        }
-        mode = mode_map.get(choice, "universal")
-
-    print(f"\n✔ Modo activado: {mode.upper()}")
+    print(S["mode_on"].format(m=mode.upper()))
     project_name = os.path.basename(os.path.abspath("."))
 
     config = {
-        "$schema": "https://raw.githubusercontent.com/smooth-prose/smooth-prose/main/schema.json",
         "name": project_name,
         "mode": mode,
+        "language": lang,
         "rules": {
             "ban_binary_contrast": True,
             "ban_throat_clearing": True,
@@ -96,67 +275,57 @@ def run_init(mode_override=None, non_interactive=False):
         }
     }
 
-    # PASO 2: Ramas Condicionales Estrictas (Zero filtrado entre modos)
-
-    # --- RAMA A: UNIVERSAL (TODO EL COPY) ---
+    # STEP 2: strict conditional branches (no leakage between modes)
     if mode == "universal":
-        print("\n[Paso 2/2: Modo Universal]")
-        print("Configurando guardarraíles para auditar todo el copy del repositorio...")
+        print(S["uni_h"])
+        print(S["uni_1"])
         config["universal_scope"] = {
             "globs": ["**/*.md", "**/*.mdx", "**/*.html", "**/*.txt", "**/*.docx"],
             "cadence_check": True,
             "proximity_repetition_window": 120,
             "auto_lint_on_build": False
         }
-        print("  ✔ Filtros activos: Zero contrastes binarios («no X, sino Y»), cero carraspeos, linter de cadencia.")
+        print(S["uni_2"])
 
-    # --- RAMA B: LITERATURA / FICCIÓN NARRATIVA ---
     elif mode == "literature":
-        print("\n[Paso 2/2: Modo Literatura — Inspección de Lore y Estilo]")
+        print(S["lit_h"])
         files = scan_existing_files(".", extensions=(".md", ".txt", ".docx"))
-        print(f"  Analizando {len(files)} archivos existentes para detectar entidades de Lore...")
+        print(S["lit_scan"].format(n=len(files)))
 
-        detected_entities = extract_candidate_lore(files)
+        detected_entities = extract_candidate_lore(files, lang)
         protected_entities = []
 
         if detected_entities and not non_interactive:
-            print("\n  Entidades y personajes detectados automáticamente:")
+            print(S["lit_found"])
             for idx, ent in enumerate(detected_entities, 1):
                 print(f"    {idx}. {ent}")
-            ans = input("\n  ¿Confirmar estas entidades para 'Protección de Lore'? [S/n]: ").strip().lower()
-            if ans in ["", "s", "si", "y", "yes"]:
+            ans = input(S["lit_confirm"]).strip().lower()
+            if ans in S["lit_yes"]:
                 protected_entities = detected_entities
             else:
-                custom = input("  Escribe las entidades protegidas separadas por coma: ").strip()
+                custom = input(S["lit_custom"]).strip()
                 protected_entities = [e.strip() for e in custom.split(",") if e.strip()]
         elif not non_interactive:
-            custom = input("  Escribe los personajes o facciones protegidas (separados por coma): ").strip()
+            custom = input(S["lit_custom2"]).strip()
             if custom:
                 protected_entities = [e.strip() for e in custom.split(",") if e.strip()]
 
         config["lore_protection"] = {
             "protected_entities": protected_entities,
             "banned_analogies": [],
-            "lexical_quotas": {
-                "sombra": { "max": 2, "alternatives": ["penumbra", "negrura", "silueta", "tinieblas"] },
-                "sombras": { "max": 2, "alternatives": ["penumbras", "negruras", "siluetas"] },
-                "polvo": { "max": 3, "alternatives": ["hollín", "herrumbre", "ceniza", "tierra seca"] },
-                "refugio": { "max": 2, "alternatives": ["guarida", "bastión", "escondite"] }
-            },
-            "banned_lexicon": ["expolio", "catalizador", "alféizar", "omnipresente", "proclama"],
+            "lexical_quotas": D["quotas"],
+            "banned_lexicon": D["banned_lexicon"],
             "quirola_weakeners_strict": True,
-            "rae_dialogue_em_dash": True
+            "rae_dialogue_em_dash": lang == "es"
         }
 
-        # Generar Matriz de Pre-Vuelo para literatura
         preflight_file = "Matriz_PreVuelo.md"
         with open(preflight_file, "w", encoding="utf-8") as pf:
-            pf.write(generate_literature_matrix(project_name, protected_entities))
-        print(f"  ✔ Matriz de Pre-Vuelo narrativa generada: {preflight_file}")
+            pf.write(generate_literature_matrix(project_name, protected_entities, lang))
+        print(S["lit_matrix"].format(f=preflight_file))
 
-    # --- RAMA C: MARKETING & CONVERSIÓN ---
     elif mode == "marketing":
-        print("\n[Paso 2/2: Modo Marketing — Canales y Conversión]")
+        print(S["mkt_h"])
         config["marketing"] = {
             "amazon_kdp": {
                 "enforce_byte_limit": 4000,
@@ -169,77 +338,41 @@ def run_init(mode_override=None, non_interactive=False):
             },
             "fact_shielding": True
         }
-        print("  ✔ Restricciones de Amazon KDP y ganchos de 2 líneas activadas.")
+        print(S["mkt_1"])
 
-    # --- RAMA D: DISEÑO WEB & UI/UX ---
     elif mode == "web":
-        print("\n[Paso 2/2: Modo Web — UI/UX Copy & Microcopy]")
+        print(S["web_h"])
         config["web_copy"] = {
             "hero_formula": "concrete_mechanism_plus_tangible_outcome",
             "button_cta_rule": "describe_actual_event_not_emotion",
-            "prohibited_buzzwords": ["revolucionario", "eleva tu flujo", "potencial ilimitado", "experiencia definitiva"]
+            "prohibited_buzzwords": D["buzzwords"]
         }
-        print("  ✔ Reglas de microcopy accionable y prohibición de eslóganes vacíos activadas.")
+        print(S["web_1"])
 
-    # Guardar configuración local en el proyecto
     out_path = "smooth-prose.config.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
-    print(f"\n✔ Archivo de configuración generado: {out_path}")
+    print(S["saved"].format(f=out_path))
     print("=" * 68)
-    print("   ✅ ONBOARDING FINALIZADO CON ÉXITO")
+    print(S["done"])
     print("=" * 68)
-    print("Comandos disponibles en este proyecto:")
-    print("  smooth-prose audit <archivo>   -> Auditoría de léxico y reglas de proyecto")
-    print("  smooth-prose lint <archivo>    -> Linter determinista de clichés y cadencia")
+    print(S["cmds"])
+    print(S["c_audit"])
+    print(S["c_lint"])
     if mode == "literature":
-        print("  smooth-prose scenes <archivo>  -> Detección de cortes ciegos (dinkus * * *)")
-        print("  smooth-prose record <cap> <cat> <texto> -> Registro de metáforas canónicas")
+        print(S["c_scenes"])
+        print(S["c_record"])
     print()
+    return 0
 
-def generate_literature_matrix(project_name, entities):
-    ent_str = ", ".join(entities) if entities else "Ninguna registrada inicialmente (actualizar con smooth-prose init)"
-    return f"""# Matriz de Pre-Vuelo Narrativa (Smooth Prose)
-> **Proyecto:** {project_name}
-> **Modo:** Literatura / Ficción Narrativa
-> **Guardarraíl:** Protección de Lore Activa
-
----
-
-## 1. Entidades de Lore Protegidas
-* **Lista Canónica:** {ent_str}
-* **Regla Inviolable:** Ningún colaborador o asistente puede renombrar, alterar la especie/naturaleza ni reinterpretar las motivaciones fundamentales de estas entidades.
-
----
-
-## 2. Vectores Obligatorios Pre-Redacción
-
-### A. Línea Temporal Diegética
-* Fijar el día canónico ($T = X$ días transcurridos desde el inicio).
-* Prohibidas referencias temporales relativas erróneas (*«aquella mañana»*).
-
-### B. Cuotas Léxicas por Capítulo
-* `sombra / sombras`: Máximo 2 menciones por capítulo.
-* `polvo`: Alternar con *hollín, herrumbre, ceniza, partículas flotantes*.
-* `aire / tensión`: Describir mediante fisiología corporal (sequedad, erizamiento del lomo, temblor), jamás con abstracciones inertes.
-
-### C. Atenuadores (Decálogo de Horacio Quiroga)
-* Purgar verbos de duda (*parecía, quizás, casi*). Afirmar con fuerza directa.
-
-### D. Ortotipografía de Diálogos y Escenas
-* Diálogos exclusivamente con raya RAE (`—`, U+2014) unida a la primera letra.
-* Saltos de escena delimitados con **Dinkus** (`* * *`) y párrafo posterior sin sangría.
-
-### E. Zero AI Slop
-* Prohibición absoluta de contrastes binarios (*«no X, sino Y»*).
-* Cero carraspeos teatrales (*«Aquí está el detalle»*).
-"""
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Inicializador de proyecto Smooth Prose")
-    parser.add_argument("--mode", choices=["universal", "literature", "marketing", "web"], help="Modo editorial predefinido")
-    parser.add_argument("--non-interactive", action="store_true", help="Modo sin preguntas interactivas")
-    args = parser.parse_args()
+    lang_opt, argv = i18n.pop_lang_arg(sys.argv[1:])
+    ui = lang_opt if lang_opt in i18n.LANGS else i18n.system_lang()
+    parser = argparse.ArgumentParser(description=STR[ui]["desc"])
+    parser.add_argument("--mode", choices=["universal", "literature", "marketing", "web"], help=STR[ui]["mode_help"])
+    parser.add_argument("--non-interactive", action="store_true", help=STR[ui]["ni_help"])
+    args = parser.parse_args(argv)
 
-    run_init(mode_override=args.mode, non_interactive=args.non_interactive)
+    sys.exit(run_init(mode_override=args.mode, non_interactive=args.non_interactive, lang=ui))

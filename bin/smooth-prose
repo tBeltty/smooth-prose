@@ -24,6 +24,9 @@ Available commands:
   smooth-prose record <ch> <cat> <text>  Record a metaphor or analogy in the canonical register.
   smooth-prose lint <file>          Analyze AI clichés, proximity repetition and human cadence.
   smooth-prose help                 Show this help.
+
+Language: rules and reports follow the document language (EN | ES).
+  Add --lang auto|en|es|all to any command, or set SMOOTH_PROSE_LANG.
 """)
 
 def main():
@@ -35,7 +38,8 @@ def main():
 
     if cmd in ["init", "setup"]:
         script = os.path.join(SCRIPTS_DIR, "init_project.py")
-        subprocess.run([sys.executable, script] + sys.argv[2:])
+        res = subprocess.run([sys.executable, script] + sys.argv[2:])
+        sys.exit(res.returncode)
 
     elif cmd in ["record", "append"]:
         script = os.path.join(SCRIPTS_DIR, "append_to_lexicon.py")

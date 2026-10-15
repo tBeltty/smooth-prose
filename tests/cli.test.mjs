@@ -108,13 +108,13 @@ test('lint: proximity repetition detected', () => {
 
 test('lint: burstiness rates monotone text as synthetic, varied text as organic', () => {
   const mono = Array(8).fill('Esta frase tiene exactamente seis palabras.').join(' ');
-  assert.match(lint(mono).cadence.rating, /Monótono/);
+  assert.equal(lint(mono).cadence.ratingKey, 'monotone');
   const varied =
     'No. ' +
     'Caminó durante horas por el muelle desierto sin encontrar a nadie que pudiera explicarle por qué las luces seguían encendidas después de tantos años. ' +
     'Nada. ' +
     'El mar respondió con un golpe seco contra los pilotes y después volvió a quedarse quieto como si esperara algo más de él.';
-  assert.match(lint(varied).cadence.rating, /Orgánico/);
+  assert.equal(lint(varied).cadence.ratingKey, 'organic');
 });
 
 test('catalog: valid, every rule has lang/severity/fix and a compiling regex', () => {
@@ -209,7 +209,7 @@ test('cli: `lint` subcommand proxies exit code of smooth-lint', () => {
   assert.equal(run('python3', [CLI, 'lint', f]).status, 1);
 });
 
-test('cli: `init` exits non-zero on failure (propagates script status)', { todo: 'bin/smooth-prose ignores init_project.py return code' }, () => {
+test('cli: `init` exits non-zero on failure (propagates script status)', () => {
   const d = tmp();
   const r = run('python3', [CLI, 'init', '--mode', 'bogus'], { cwd: d });
   assert.notEqual(r.status, 0);
@@ -246,10 +246,10 @@ test('scenes: reports blind cuts, accepts dinkus', () => {
   fs.writeFileSync(ok, 'Primera escena.\n\n* * *\n\nSegunda escena.\n');
   const r = run('python3', [path.join(SCRIPTS, 'audit_scene_breaks.py'), ok]);
   assert.equal(r.status, 0);
-  assert.match(r.stdout, /cortes ciegos detectados: 0/);
+  assert.match(r.stdout, /: 0\n/);
 });
 
-test('scenes: detects a blind time/place cut without dinkus', { todo: 'verify heuristic against a real blind-cut sample' }, () => {
+test('scenes: detects a blind time/place cut without dinkus (ES and EN)', () => {
   const d = tmp();
   const f = path.join(d, 'blind.md');
   fs.writeFileSync(
@@ -257,7 +257,10 @@ test('scenes: detects a blind time/place cut without dinkus', { todo: 'verify he
     'Daniel cerró la puerta y se quedó mirando la calle vacía.\n\nTres días después, en el puerto de Cádiz, Marta contaba las monedas.\n'
   );
   const r = run('python3', [path.join(SCRIPTS, 'audit_scene_breaks.py'), f]);
-  assert.doesNotMatch(r.stdout, /cortes ciegos detectados: 0/);
+  assert.equal(r.status, 1);
+  const g = path.join(d, 'blind-en.md');
+  fs.writeFileSync(g, 'Daniel shut the door and watched the street.\n\nThree days later, at the harbor, Marta counted the coins.\n');
+  assert.equal(run('python3', [path.join(SCRIPTS, 'audit_scene_breaks.py'), g]).status, 1);
 });
 
 for (const mode of ['universal', 'literature', 'marketing', 'web']) {
@@ -282,7 +285,7 @@ test('init: universal config matches the README example (globs, window 120)', ()
   assert.ok(cfg.universal_scope.globs.includes('**/*.docx'));
 });
 
-test('init: generated config does not point at a dead $schema URL', { todo: 'config still emits a $schema URL that does not exist' }, () => {
+test('init: generated config does not point at a dead $schema URL', () => {
   const d = tmp();
   run('python3', [path.join(SCRIPTS, 'init_project.py'), '--mode', 'web', '--non-interactive'], { cwd: d });
   const cfg = JSON.parse(fs.readFileSync(path.join(d, 'smooth-prose.config.json'), 'utf8'));
@@ -293,7 +296,7 @@ test('record: appends metaphor under chapter + category, idempotent file creatio
   const d = tmp();
   const r = run('python3', [CLI, 'record', '4', 'Agility', 'Slid like black oil across the cobbles'], { cwd: d });
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  const f = path.join(d, 'Registro_de_Analogias_y_Metaforas.md');
+  const f = path.join(d, fs.readdirSync(d).find((n) => /Registry|Registro/.test(n)));
   assert.match(fs.readFileSync(f, 'utf8'), /black oil across the cobbles/);
   run('python3', [CLI, 'record', '5', 'Agility', 'Second one'], { cwd: d });
   const txt = fs.readFileSync(f, 'utf8');
@@ -306,7 +309,7 @@ test('record: too few args exits 1', () => {
 });
 
 test('zero-dependency claim: no third-party imports at module level', () => {
-  const stdlib = new Set(['sys', 'os', 'subprocess', 're', 'json', 'argparse', 'zipfile', 'datetime', 'collections', 'pathlib', 'xml', 'glob', 'textwrap', 'shutil', 'time']);
+  const stdlib = new Set(['sys', 'os', 'subprocess', 're', 'json', 'argparse', 'zipfile', 'datetime', 'collections', 'pathlib', 'xml', 'glob', 'textwrap', 'shutil', 'time', 'i18n']);
   for (const f of fs.readdirSync(SCRIPTS).filter((n) => n.endsWith('.py'))) {
     const src = fs.readFileSync(path.join(SCRIPTS, f), 'utf8');
     for (const m of src.matchAll(/^(?:import|from)\s+([a-zA-Z_][\w]*)/gm)) {
@@ -332,8 +335,9 @@ test('README: every relative link/path in the architecture tree exists', () => {
   for (const l of links) assert.ok(fs.existsSync(path.join(ROOT, l)), `broken link: ${l}`);
 });
 
-test('README: KDP whitelist lists 13 tags but README says 12', { todo: 'README claims 12 allowed tags; SKILL.md lists 13' }, () => {
+test('README: KDP tag count matches the skill whitelist', () => {
   const skill = fs.readFileSync(path.join(ROOT, 'skills', 'smooth-marketing', 'SKILL.md'), 'utf8');
   const line = skill.split('\n').find((l) => l.includes('Permitted:'));
-  assert.equal((line.match(/<\w+>/g) || []).length, 12);
+  const n = (line.match(/<\w+>/g) || []).length;
+  assert.match(fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8'), new RegExp(`whitelist of ${n} allowed HTML tags`));
 });

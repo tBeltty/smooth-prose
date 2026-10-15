@@ -45,7 +45,7 @@ function detectLanguage(text) {
     if (LANG_HINTS.es.has(w)) counts.es++;
   }
   const total = counts.en + counts.es;
-  if (total < 3) return 'all';
+  if (total < 2) return 'all';
   const [major, minor] = counts.en >= counts.es ? ['en', 'es'] : ['es', 'en'];
   return counts[minor] / total < 0.25 ? major : 'all';
 }
@@ -65,6 +65,37 @@ const STOPWORDS = new Set([
 
 // Quotas for overused words in literary fiction (per language, from the catalog)
 const LEXICAL_QUOTAS = { ...CATALOG.quotas.es, ...CATALOG.quotas.en };
+
+// Report strings (the report language follows the document language, --lang or SMOOTH_PROSE_LANG)
+const UI = {
+  en: {
+    ratings: { organic: 'Organic / Human', balanced: 'Balanced', monotone: 'Monotone / Synthetic', few: 'Too few sentences' },
+    title: 'Smooth Prose Lint Report', file: 'File',
+    cadence: 'Rhythm & Cadence (Burstiness)', deviation: 'Deviation', sentences: 'Sentences', diagnosis: 'Diagnosis',
+    clean: 'Zero AI Slop patterns detected.', found: 'AI Slop patterns found', fixLabel: 'Fix',
+    quota: 'Lexical Quotas Exceeded', quotaLine: 'Word "{w}": {c} times (max allowed: {m}).', hint: 'Suggestion',
+    prox: 'Excessive Repetition in Proximity (<120 words)', repeated: 'Repeated word: "{w}" (first seen on L{l})', more: '... and {n} more repetitions.',
+    summary: 'Final Summary', ok: 'Approved', blocking: '{n} blocking errors',
+    usage: 'Usage', missing: 'Error: file "{f}" does not exist.', badLang: 'Error: --lang must be one of auto|en|es|all.'
+  },
+  es: {
+    ratings: { organic: 'Orgánico / Humano', balanced: 'Equilibrado', monotone: 'Monótono / Sintético', few: 'Pocas oraciones' },
+    title: 'Smooth Prose Lint Report', file: 'Archivo',
+    cadence: 'Ritmo & Cadencia (Burstiness)', deviation: 'Desviación', sentences: 'Oraciones', diagnosis: 'Diagnóstico',
+    clean: 'Cero patrones de AI Slop detectados.', found: 'Patrones de AI Slop encontrados', fixLabel: 'Solución',
+    quota: 'Cuotas Léxicas Superadas', quotaLine: 'Palabra "{w}": {c} veces (Máx permitido: {m}).', hint: 'Sugerencia',
+    prox: 'Repetición Excesiva en Proximidad (<120 palabras)', repeated: 'Palabra repetida: "{w}" (vista previamente en L{l})', more: '... y {n} repeticiones adicionales.',
+    summary: 'Resumen Final', ok: 'Aprobado', blocking: '{n} errores bloqueantes',
+    usage: 'Uso', missing: 'Error: El archivo "{f}" no existe.', badLang: 'Error: --lang debe ser auto|en|es|all.'
+  }
+};
+
+function systemLang() {
+  const env = (process.env.SMOOTH_PROSE_LANG || '').toLowerCase();
+  if (env === 'en' || env === 'es') return env;
+  const loc = (process.env.LC_ALL || process.env.LC_MESSAGES || process.env.LANG || '').toLowerCase();
+  return loc.startsWith('es') ? 'es' : 'en';
+}
 
 /**
  * Parses line numbers from byte offset
@@ -86,21 +117,22 @@ function calculateBurstiness(text) {
     .map(s => s.trim())
     .filter(s => s.length > 0);
 
-  if (rawSentences.length < 3) return { burstiness: 10, rating: 'Pocas oraciones' };
+  if (rawSentences.length < 3) return { burstiness: 10, sentenceCount: rawSentences.length, ratingKey: 'few', rating: 'few' };
 
   const wordCounts = rawSentences.map(s => s.split(/\s+/).filter(Boolean).length);
   const avg = wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length;
   const variance = wordCounts.reduce((sum, len) => sum + Math.pow(len - avg, 2), 0) / wordCounts.length;
   const burstiness = Math.sqrt(variance);
 
-  let rating = 'Orgánico / Humano';
-  if (burstiness < 5.0) rating = 'Monótono / Sintético';
-  else if (burstiness < 7.5) rating = 'Equilibrado';
+  let rating = 'organic';
+  if (burstiness < 5.0) rating = 'monotone';
+  else if (burstiness < 7.5) rating = 'balanced';
 
   return {
     burstiness: parseFloat(burstiness.toFixed(2)),
     avgSentenceLength: parseFloat(avg.toFixed(1)),
     sentenceCount: rawSentences.length,
+    ratingKey: rating,
     rating
   };
 }
@@ -215,10 +247,13 @@ function lintText(text, filePath = '<stdin>', langOpt = 'auto') {
 
   // 3. Cadence Metrics
   const cadence = calculateBurstiness(scannableText);
+  const ui = (lang === 'en' || lang === 'es') ? lang : systemLang();
+  cadence.rating = UI[ui].ratings[cadence.ratingKey];
 
   return {
     filePath,
     lang,
+    ui,
     issues,
     proximityIssues,
     quotaViolations,
@@ -234,63 +269,61 @@ function printReport(result, jsonMode = false) {
     console.log(JSON.stringify(result, null, 2));
     return;
   }
+  const T = UI[result.ui];
+  const fmt = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
 
-  console.log(`\n${colors.bold}${colors.cyan}=== Smooth Prose Lint Report ===${colors.reset}`);
-  console.log(`${colors.gray}File: ${result.filePath}${colors.reset}\n`);
+  console.log(`\n${colors.bold}${colors.cyan}=== ${T.title} ===${colors.reset}`);
+  console.log(`${colors.gray}${T.file}: ${result.filePath}${colors.reset}\n`);
 
-  // Cadence Summary
-  console.log(`${colors.bold}📊 Ritmo & Cadencia (Burstiness):${colors.reset}`);
-  const burstColor = result.cadence.rating.includes('Monótono') ? colors.red : colors.green;
-  console.log(`   Desviación: ${result.cadence.burstiness} | Oraciones: ${result.cadence.sentenceCount} | Diagnóstico: ${burstColor}${result.cadence.rating}${colors.reset}\n`);
+  console.log(`${colors.bold}📊 ${T.cadence}:${colors.reset}`);
+  const burstColor = result.cadence.ratingKey === 'monotone' ? colors.red : colors.green;
+  console.log(`   ${T.deviation}: ${result.cadence.burstiness} | ${T.sentences}: ${result.cadence.sentenceCount} | ${T.diagnosis}: ${burstColor}${result.cadence.rating}${colors.reset}\n`);
 
-  // Slop Issues
   if (result.issues.length === 0) {
-    console.log(`${colors.green}✔ Cero patrones de AI Slop detectados.${colors.reset}`);
+    console.log(`${colors.green}✔ ${T.clean}${colors.reset}`);
   } else {
-    console.log(`${colors.bold}${colors.red}❌ Patrones de AI Slop encontrados (${result.issues.length}):${colors.reset}`);
+    console.log(`${colors.bold}${colors.red}❌ ${T.found} (${result.issues.length}):${colors.reset}`);
     for (const issue of result.issues) {
       const sevColor = issue.severity === 'error' ? colors.red : colors.yellow;
       console.log(`   ${colors.gray}L${issue.line}:${issue.column}${colors.reset} [${sevColor}${issue.name}${colors.reset}]`);
       console.log(`     ${colors.dim}"${issue.match}"${colors.reset}`);
-      console.log(`     ${colors.green}💡 Solución:${colors.reset} ${issue.fix}\n`);
+      console.log(`     ${colors.green}💡 ${T.fixLabel}:${colors.reset} ${issue.fix}\n`);
     }
   }
 
-  // Quota Violations
   if (result.quotaViolations.length > 0) {
-    console.log(`${colors.bold}${colors.yellow}⚠️  Cuotas Léxicas Superadas:${colors.reset}`);
+    console.log(`${colors.bold}${colors.yellow}⚠️  ${T.quota}:${colors.reset}`);
     for (const q of result.quotaViolations) {
-      console.log(`   Palabra "${colors.bold}${q.word}${colors.reset}": ${q.count} veces (Máx permitido: ${q.max}).`);
-      console.log(`   ${colors.gray}Sugerencia: ${q.label}${colors.reset}\n`);
+      console.log(`   ${fmt(T.quotaLine, { w: colors.bold + q.word + colors.reset, c: q.count, m: q.max })}`);
+      console.log(`   ${colors.gray}${T.hint}: ${q.label}${colors.reset}\n`);
     }
   }
 
-  // Repetition in close proximity
   if (result.proximityIssues.length > 0) {
-    console.log(`${colors.bold}${colors.yellow}🔁 Repetición Excesiva en Proximidad (<120 palabras):${colors.reset}`);
+    console.log(`${colors.bold}${colors.yellow}🔁 ${T.prox}:${colors.reset}`);
     const sample = result.proximityIssues.slice(0, 8);
     for (const rep of sample) {
-      console.log(`   ${colors.gray}L${rep.line}:${rep.column}${colors.reset} Palabra repetida: "${colors.bold}${rep.word}${colors.reset}" (vista previamente en L${rep.firstOccurrenceLine})`);
+      console.log(`   ${colors.gray}L${rep.line}:${rep.column}${colors.reset} ${fmt(T.repeated, { w: colors.bold + rep.word + colors.reset, l: rep.firstOccurrenceLine })}`);
     }
     if (result.proximityIssues.length > 8) {
-      console.log(`   ${colors.dim}... y ${result.proximityIssues.length - 8} repeticiones adicionales.${colors.reset}`);
+      console.log(`   ${colors.dim}${fmt(T.more, { n: result.proximityIssues.length - 8 })}${colors.reset}`);
     }
     console.log();
   }
 
   const totalErrors = result.issues.filter(i => i.severity === 'error').length;
-  console.log(`${colors.bold}Resumen Final:${colors.reset} ${totalErrors === 0 ? colors.green + 'Aprobado' : colors.red + totalErrors + ' errores bloqueantes'}${colors.reset}\n`);
+  console.log(`${colors.bold}${T.summary}:${colors.reset} ${totalErrors === 0 ? colors.green + T.ok : colors.red + fmt(T.blocking, { n: totalErrors })}${colors.reset}\n`);
 }
 
 // CLI entry point
 const args = process.argv.slice(2);
 const jsonMode = args.includes('--json');
 const langIdx = args.findIndex(a => a === '--lang' || a.startsWith('--lang='));
-let langOpt = 'auto';
+let langOpt = ['en', 'es', 'all'].includes((process.env.SMOOTH_PROSE_LANG || '').toLowerCase()) ? process.env.SMOOTH_PROSE_LANG.toLowerCase() : 'auto';
 if (langIdx !== -1) {
   langOpt = args[langIdx].includes('=') ? args[langIdx].split('=')[1] : args[langIdx + 1];
   if (!['auto', 'en', 'es', 'all'].includes(langOpt)) {
-    console.error(`${colors.red}Error:${colors.reset} --lang must be one of auto|en|es|all.`);
+    console.error(`${colors.red}${UI[systemLang()].badLang}${colors.reset}`);
     process.exit(2);
   }
 }
@@ -308,14 +341,14 @@ if (!targetFile) {
       process.exit(res.issues.filter(i => i.severity === 'error').length > 0 ? 1 : 0);
     });
   } else {
-    console.log(`${colors.bold}Uso:${colors.reset} smooth-lint <archivo.md> [--json] [--lang auto|en|es|all]`);
-    console.log(`     cat texto.txt | smooth-lint [--json]`);
+    console.log(`${colors.bold}${UI[systemLang()].usage}:${colors.reset} smooth-lint <archivo.md> [--json] [--lang auto|en|es|all]`);
+    console.log(`     cat text.txt | smooth-lint [--json]`);
     process.exit(0);
   }
 } else {
   const absPath = path.resolve(process.cwd(), targetFile);
   if (!fs.existsSync(absPath)) {
-    console.error(`${colors.red}Error:${colors.reset} El archivo "${targetFile}" no existe.`);
+    console.error(`${colors.red}${UI[systemLang()].missing.replace('{f}', targetFile)}${colors.reset}`);
     process.exit(1);
   }
   const content = fs.readFileSync(absPath, 'utf-8');

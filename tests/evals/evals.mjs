@@ -77,7 +77,7 @@ function grade(c, text) {
     fs.writeFileSync(f, text);
     const r = spawnSync('python3', [path.join(ROOT, 'scripts', 'audit_scene_breaks.py'), f], { encoding: 'utf8' });
     fs.unlinkSync(f);
-    if (r.status !== 0 || !/cortes ciegos detectados: 0/.test(r.stdout)) fails.push('scene-break audit not clean');
+    if (r.status !== 0) fails.push('scene-break audit not clean');
   }
   return [...new Set(fails)];
 }

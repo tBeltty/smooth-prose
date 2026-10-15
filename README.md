@@ -48,7 +48,8 @@ smooth-prose/
 │   ├── smooth-marketing/           # Conversion copy, KDP blurbs & 2-line hooks
 │   └── smooth-narrative/           # Literary fiction, sensory pacing & RAE orthotypography
 ├── heuristics/
-│   └── slop-catalog.json           # Deterministic regex patterns (EN & ES) for zero-AI linting
+│   ├── slop-catalog.json           # Deterministic regex patterns (EN & ES) for zero-AI linting
+│   └── lexicon.json                # Per-language lexicons: quotas, weakeners, banned terms, scene openers
 ├── scripts/
 │   ├── lexicon_audit.py            # Canonical lexicon & weakeners auditor (.docx, .md, .txt)
 │   ├── audit_scene_breaks.py       # Blind cuts & scene break auditor (* * *)
@@ -75,7 +76,7 @@ smooth-prose/
 * **Empty States & Onboarding:** Spatial orientation without patronizing cheerleading.
 
 #### 3. [`smooth-marketing`](skills/smooth-marketing/SKILL.md) — Conversion & Publishing
-* **Amazon KDP Blurbs:** Strict compliance with Amazon's 4,000-character ceiling, above-the-fold optimization, and whitelist of 12 allowed HTML tags.
+* **Amazon KDP Blurbs:** Strict compliance with Amazon's 4,000-character ceiling, above-the-fold optimization, and whitelist of 13 allowed HTML tags.
 * **Two-Line Hook Formula:** Line 1 (context $\le 40$ chars) + Line 2 (punchy contrast $\le 40$ chars). No clickbait.
 * **Authentic Frameworks:** Problem-Agitate-Solve (PAS) and Before-After-Bridge (BAB) without artificial scarcity or hype.
 
