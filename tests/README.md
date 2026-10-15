@@ -26,7 +26,7 @@ Outputs in `tests/evals/out/` are git-ignored.
 
 ## 3. Sandbox runs (`tests/sandbox/`)
 
-Simulates a user project with the framework installed and nothing else, then lets an agent do realistic tasks in English: polish landing copy, write a KDP blurb and hook, edit a fiction chapter, set up a novel project, clean release notes without touching facts, and build a pre-commit hook.
+Simulates a user project where the framework is the only editorial tooling provided (agents still start with the host's global instructions and tool set), then lets an agent do realistic tasks in English: polish landing copy, write a KDP blurb and hook, edit a fiction chapter, set up a novel project, clean release notes without touching facts, and build a pre-commit hook.
 
 ```bash
 node tests/sandbox/setup.mjs /tmp/sp-sandbox      # framework copy, logging CLI shims, fixtures, one brief per scenario

@@ -49,7 +49,7 @@ Two of those nine are launch-landing cases (`web-launch-landing`, `web-launch-la
 
 ### Layer 3: sandbox agent runs
 
-Six scenarios run in an isolated project where the framework is installed and nothing else: landing copy, KDP blurb with a two-line hook, fiction chapter edit, novel project setup, release notes with fact and quote shielding, and a git pre-commit hook. One small-model agent runs per scenario. Grading is deterministic and inspects only the results and a log of CLI calls.
+Six scenarios run in a project directory where the framework is the only editorial tooling provided: landing copy, KDP blurb with a two-line hook, fiction chapter edit, novel project setup, release notes with fact and quote shielding, and a git pre-commit hook. One small-model agent runs per scenario. Grading is deterministic and inspects only the results and a log of CLI calls.
 
 The first pass was 4/6. Two checks were too strict, and one fixture lacked the source facts needed for the requested blurb length; the agent had correctly refused to invent plot details. The checks and fixture were corrected and the scenarios re-run.
 
@@ -59,6 +59,7 @@ The tests led to fixes for: missing English coverage (README examples were not d
 
 ### Known limits
 
+- Agents are not hermetically isolated. Subagents do not inherit the conversation, but they start with the host's global instructions and tool set. Checked in the transcripts of the nine control runs: no skill was invoked and nothing under `skills/` or `rules/` was read, so the control is clean in practice, not by construction.
 - Three runs per eval case and one per sandbox scenario, with a single small model. The differences are indicative, not statistically established.
 - Some checks encode the skills' own rules (for example the 40-character hook), which the control was not told. That measures what the skills add, not general writing quality.
 - Several eval inputs echo examples in the skills, which favors the with-skill runs. Held-out inputs are still to do.
