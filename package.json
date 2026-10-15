@@ -9,7 +9,10 @@
     "smooth-lint": "bin/smooth-lint.mjs"
   },
   "scripts": {
-    "lint": "node bin/smooth-lint.mjs"
+    "lint": "node bin/smooth-lint.mjs",
+    "test": "node --test tests/cli.test.mjs",
+    "evals:list": "node tests/evals/evals.mjs list",
+    "evals:score": "node tests/evals/evals.mjs score"
   },
   "keywords": [
     "anti-slop",

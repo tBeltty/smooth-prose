@@ -1,0 +1,130 @@
+{
+  "description": "Behavioral cases for the 4 skills. A model reads one SKILL.md, rewrites `input` following the skill, and writes only the result to tests/evals/out/<id>.txt. score.mjs grades it deterministically.",
+  "cases": [
+    {
+      "id": "core-binary-contrast",
+      "skill": "smooth-core",
+      "task": "Rewrite the text applying the skill. Return only the rewritten text.",
+      "input": "Let's be clear: the bottleneck isn't a lack of tools, but a failure of coordination.",
+      "checks": {
+        "lintClean": true,
+        "mustKeep": ["coordination"],
+        "mustNotMatch": ["isn['’]?t[^.]*\\bbut\\b", "let['’]?s be clear"]
+      }
+    },
+    {
+      "id": "core-fact-shield",
+      "skill": "smooth-core",
+      "task": "Rewrite the text applying the skill. Return only the rewritten text.",
+      "input": "Here's the thing: it's not about price, but value. The Pro plan costs $1,299 and launches on 14 March 2026. \"We ship Friday,\" said Ana Ruiz, CTO.",
+      "checks": {
+        "lintClean": true,
+        "mustKeep": ["$1,299", "14 March 2026", "\"We ship Friday,\"", "Ana Ruiz"],
+        "mustNotMatch": ["here['’]?s the thing", "not about price"]
+      }
+    },
+    {
+      "id": "core-spanish-contrast",
+      "skill": "smooth-core",
+      "task": "Reescribe el texto aplicando la skill. Devuelve solo el texto reescrito.",
+      "input": "Seamos claros: el problema no es la falta de presupuesto, sino la falta de prioridades. La reunión será el 3 de abril a las 10:00.",
+      "checks": {
+        "lintClean": true,
+        "mustKeep": ["3 de abril", "10:00"],
+        "mustNotMatch": ["seamos claros", "\\bsino\\b"]
+      }
+    },
+    {
+      "id": "web-hero",
+      "skill": "smooth-web",
+      "task": "Write a hero headline plus one supporting sentence for a CLI tool that audits npm dependencies for known vulnerabilities. Return only those two lines.",
+      "input": "Take your development workflow to the next level with cutting-edge AI.",
+      "checks": {
+        "lintClean": true,
+        "mustNotMatch": ["next level", "cutting-edge", "empower", "unlock", "supercharge", "revolutioni"],
+        "mustMatch": ["(?i)(audit|scan|detect|vulnerab|dependenc)"]
+      }
+    },
+    {
+      "id": "web-cta",
+      "skill": "smooth-web",
+      "task": "Rewrite this button label so it describes the actual event. The button downloads the macOS installer. Return only the label.",
+      "input": "Discover the magic",
+      "checks": {
+        "mustNotMatch": ["magic", "discover", "journey"],
+        "mustMatch": ["(?i)download"],
+        "maxChars": 40
+      }
+    },
+    {
+      "id": "web-error",
+      "skill": "smooth-web",
+      "task": "Rewrite this error message: say what happened in plain language and give an immediate fix. Return only the message.",
+      "input": "Error: You entered an invalid password. Access denied.",
+      "checks": {
+        "mustNotMatch": ["\\byou entered\\b", "\\binvalid\\b", "\\bfailed\\b", "\\bfault\\b"],
+        "mustMatch": ["(?i)password"]
+      }
+    },
+    {
+      "id": "marketing-hook",
+      "skill": "smooth-marketing",
+      "task": "Write a two-line hook for a post about testing cold outreach emails (400 emails tested, one subject-line change doubled replies). Return exactly two lines.",
+      "input": "Discover the hidden secrets top marketers never want you to know.",
+      "checks": {
+        "lintClean": true,
+        "lines": { "count": 2, "maxChars": 40 },
+        "mustNotMatch": ["secret", "nobody is talking", "99%", "never want you"],
+        "mustKeep": ["400"]
+      }
+    },
+    {
+      "id": "marketing-kdp-blurb",
+      "skill": "smooth-marketing",
+      "task": "Write an Amazon KDP book description (HTML) for a thriller novel about a lighthouse keeper who finds a ledger of shipwrecks. 150-250 words. Return only the HTML.",
+      "input": "",
+      "checks": {
+        "html": {
+          "allowed": ["b", "strong", "i", "em", "u", "p", "br", "h4", "h5", "h6", "ul", "ol", "li"],
+          "maxBytes": 4000
+        },
+        "words": { "min": 80, "max": 300 },
+        "mustNotMatch": ["<h[123]\\b", "act now", "once in a lifetime", "ultimate"]
+      }
+    },
+    {
+      "id": "narrative-weakeners",
+      "skill": "smooth-narrative",
+      "task": "Reescribe el fragmento aplicando la skill. Devuelve solo el texto.",
+      "input": "El hierro parecía resistir el golpe de Daniel. Casi sin darse cuenta, quizás sentía miedo. Había una tensión palpable en el aire.",
+      "checks": {
+        "lintClean": true,
+        "noInfo": true,
+        "mustKeep": ["Daniel"],
+        "mustNotMatch": ["parecía", "casi sin darse cuenta", "quizás", "tensión palpable", "tensión en el aire"]
+      }
+    },
+    {
+      "id": "narrative-dialogue",
+      "skill": "smooth-narrative",
+      "task": "Corrige la tipografía del diálogo según la skill. Devuelve solo el texto.",
+      "input": "\"No pienso volver\" dijo Daniel. \"Tenemos que seguir\".\n- Abre la puerta - susurró ella. - Están afuera.",
+      "checks": {
+        "mustMatch": ["^—\\S", "—dijo Daniel|— dijo Daniel"],
+        "mustNotMatch": ["\"", "^- ", "^—\\s"],
+        "mustKeep": ["Daniel"]
+      }
+    },
+    {
+      "id": "narrative-scene-break",
+      "skill": "smooth-narrative",
+      "task": "Este capítulo salta de escena sin transición. Inserta el separador canónico de la skill. Devuelve solo el texto.",
+      "input": "Daniel cerró la puerta y se quedó mirando la calle vacía.\n\nTres días después, en el puerto de Cádiz, Marta contaba las monedas.",
+      "checks": {
+        "mustMatch": ["^\\* \\* \\*$"],
+        "mustKeep": ["Daniel", "Marta", "Cádiz"],
+        "scenesClean": true
+      }
+    }
+  ]
+}
