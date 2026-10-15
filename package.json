@@ -1,0 +1,26 @@
+{
+  "name": "smooth-prose",
+  "version": "1.0.0",
+  "description": "Context-agnostic editorial suite for human cadence, zero AI slop, and deterministic text linting.",
+  "type": "module",
+  "main": "bin/smooth-lint.mjs",
+  "bin": {
+    "smooth-prose": "bin/smooth-prose",
+    "smooth-lint": "bin/smooth-lint.mjs"
+  },
+  "scripts": {
+    "lint": "node bin/smooth-lint.mjs"
+  },
+  "keywords": [
+    "anti-slop",
+    "writing",
+    "linter",
+    "burstiness",
+    "nlp",
+    "editorial",
+    "copywriting",
+    "fiction"
+  ],
+  "author": "Smooth Prose Contributors",
+  "license": "MIT"
+}

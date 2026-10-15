@@ -1,0 +1,26 @@
+{
+  "name": "smooth-prose",
+  "displayName": "Smooth Prose",
+  "version": "1.0.0",
+  "description": "Context-agnostic editorial suite for human cadence, zero AI slop, and high-craft writing across web design, marketing, and narrative fiction.",
+  "author": {
+    "name": "Smooth Prose Contributors"
+  },
+  "repository": "https://github.com/tBeltty/smooth-prose",
+  "license": "MIT",
+  "keywords": [
+    "writing",
+    "anti-slop",
+    "copywriting",
+    "ui-copy",
+    "fiction",
+    "human-cadence",
+    "editing"
+  ],
+  "suggestedPrompts": [
+    "Audit this draft with smooth-core to remove AI slop",
+    "Write the microcopy and hero section for a website with smooth-web",
+    "Write a sales blurb optimized for Amazon KDP with smooth-marketing",
+    "Review the style and scene breaks of this chapter with smooth-narrative"
+  ]
+}

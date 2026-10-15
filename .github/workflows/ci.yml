@@ -1,0 +1,48 @@
+name: CI & Prose Quality Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify CLI Executable Permissions
+        run: |
+          chmod +x bin/smooth-prose bin/smooth-lint.mjs scripts/*.py
+
+      - name: Run Smooth Lint (Cadence & AI Slop Check)
+        run: |
+          node bin/smooth-lint.mjs README.md
+          node bin/smooth-lint.mjs CONTRIBUTING.md
+          node bin/smooth-lint.mjs rules/anti-slop-directive.md
+
+      - name: Run Lexicon Audit on Master Documents
+        run: |
+          python3 scripts/lexicon_audit.py README.md
+          python3 scripts/lexicon_audit.py rules/anti-slop-directive.md
+          python3 scripts/lexicon_audit.py rules/onboarding-protocol.md
+
+      - name: Test Project Init State Machine (Universal & Literature)
+        run: |
+          python3 scripts/init_project.py --mode universal --non-interactive
+          test -f smooth-prose.config.json
+          python3 scripts/init_project.py --mode literature --non-interactive
+          test -f Matriz_PreVuelo.md

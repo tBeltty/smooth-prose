@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""
+bin/smooth-prose - Unified command-line interface for Smooth Prose.
+Orchestrates:
+  - smooth-prose init      -> Interactive inspection protocol and Lore Protection
+  - smooth-prose audit     -> Canonical lexical audit (lexicon_audit.py)
+  - smooth-prose scenes    -> Scene-break and blind-cut detection (audit_scene_breaks.py)
+  - smooth-prose lint      -> Cliché, repetition and cadence linter
+"""
+
+import sys, os, subprocess
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+SCRIPTS_DIR = os.path.join(BASE_DIR, "scripts")
+
+def print_help():
+    print("""
+🪶 Smooth Prose CLI — Editorial Suite & Lore Protection
+
+Available commands:
+  smooth-prose init                 Start the project protocol, inspect the copy and configure Lore Protection.
+  smooth-prose audit <file>         Run the canonical lexical audit (.docx, .md, .txt).
+  smooth-prose scenes <file>        Detect blind cuts and audit scene breaks (* * *).
+  smooth-prose record <ch> <cat> <text>  Record a metaphor or analogy in the canonical register.
+  smooth-prose lint <file>          Analyze AI clichés, proximity repetition and human cadence.
+  smooth-prose help                 Show this help.
+""")
+
+def main():
+    if len(sys.argv) < 2:
+        print_help()
+        sys.exit(0)
+
+    cmd = sys.argv[1]
+
+    if cmd in ["init", "setup"]:
+        script = os.path.join(SCRIPTS_DIR, "init_project.py")
+        subprocess.run([sys.executable, script] + sys.argv[2:])
+
+    elif cmd in ["record", "append"]:
+        script = os.path.join(SCRIPTS_DIR, "append_to_lexicon.py")
+        res = subprocess.run([sys.executable, script] + sys.argv[2:])
+        sys.exit(res.returncode)
+
+    elif cmd in ["audit", "lexicon"]:
+        if len(sys.argv) < 3:
+            print("Error: specify the file to audit. Example: smooth-prose audit chapter_1.docx")
+            sys.exit(1)
+        script = os.path.join(SCRIPTS_DIR, "lexicon_audit.py")
+        res = subprocess.run([sys.executable, script] + sys.argv[2:])
+        sys.exit(res.returncode)
+
+    elif cmd in ["scenes", "breaks"]:
+        if len(sys.argv) < 3:
+            print("Error: specify the file to audit. Example: smooth-prose scenes chapter_1.docx")
+            sys.exit(1)
+        script = os.path.join(SCRIPTS_DIR, "audit_scene_breaks.py")
+        res = subprocess.run([sys.executable, script] + sys.argv[2:])
+        sys.exit(res.returncode)
+
+    elif cmd in ["lint"]:
+        script = os.path.join(BASE_DIR, "bin", "smooth-lint.mjs")
+        res = subprocess.run(["node", script] + sys.argv[2:])
+        sys.exit(res.returncode)
+
+    elif cmd in ["help", "--help", "-h"]:
+        print_help()
+
+    else:
+        # If a file is passed directly, run the default audit
+        if os.path.exists(cmd):
+            script = os.path.join(SCRIPTS_DIR, "lexicon_audit.py")
+            res = subprocess.run([sys.executable, script, cmd])
+            sys.exit(res.returncode)
+        else:
+            print(f"Unknown command: '{cmd}'")
+            print_help()
+            sys.exit(1)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "name": "smooth-prose-heuristics",
+  "description": "Deterministic regular expressions and rule definitions for detecting AI slop patterns.",
+  "rules": [
+    {
+      "id": "contrast-binary-es",
+      "category": "contrast",
+      "severity": "high",
+      "regex": "\\bno\\s+(?:porque|por|era|es|se\\s+trata\\s+de)\\s+[^,.—;]+[,.—;]\\s*(?:sino|sino\\s+que|era|es|se\\s+trata\\s+de)\\s+[^,.—;]+",
+      "description": "Contraste binario artificial o negación telegrafiada en español.",
+      "remediation": "Afirmar el segundo término directamente sin la negación previa."
+    },
+    {
+      "id": "contrast-binary-en",
+      "category": "contrast",
+      "severity": "high",
+      "regex": "\\b(?:it'?s\\s+not\\s+(?:about|because)|not\\s+because|not\\s+just)\\s+[^,.—;]+[,.—;]\\s*(?:but\\s+(?:because|about|rather)|it'?s)\\s+[^,.—;]+",
+      "description": "Artificial binary contrast or telegraphed negation in English.",
+      "remediation": "State the affirmative claim directly without the preceding negative detour."
+    },
+    {
+      "id": "throat-clearing-es",
+      "category": "throat_clearing",
+      "severity": "high",
+      "regex": "^\\s*(?:aquí\\s+está\\s+el\\s+detalle|seamos\\s+claros|seamos\\s+honestos|la\\s+verdad\\s+es\\s+que|hablemos\\s+de|déjame\\s+decirte\\s+algo|la\\s+realidad\\s+es\\s+simple)\\s*[:,-]",
+      "description": "Carraspeo o apertura teatral innecesaria en español.",
+      "remediation": "Eliminar la frase introductoria y comenzar directamente con el sujeto y verbo."
+    },
+    {
+      "id": "throat-clearing-en",
+      "category": "throat_clearing",
+      "severity": "high",
+      "regex": "^\\s*(?:here'?s\\s+the\\s+thing|let'?s\\s+be\\s+honest|make\\s+no\\s+mistake|the\\s+truth\\s+is|let'?s\\s+dive\\s+in|at\\s+the\\s+end\\s+of\\s+the\\s+day)\\s*[:,-]",
+      "description": "Theatrical throat-clearing or pompous rhetorical preamble in English.",
+      "remediation": "Delete the preamble and begin directly with the core message."
+    },
+    {
+      "id": "pseudo-profound-es",
+      "category": "closure",
+      "severity": "medium",
+      "regex": "\\b(?:el\\s+futuro\\s+(?:no\\s+está\\s+llegando|ya\\s+está\\s+aquí)|piénsalo\\s+bien|punto\\s+final|y\\s+eso\\s+está\\s+bien)\\b",
+      "description": "Cierre pseudo-profundo o cliché melodramático.",
+      "remediation": "Concluir con un dato verificable o una llamada a la acción concreta."
+    },
+    {
+      "id": "corporate-jargon-es",
+      "category": "jargon",
+      "severity": "medium",
+      "regex": "\\b(?:desempacar|navegar\\s+(?:el\\s+panorama|los\\s+desafíos)|hacer\\s+un\\s+deep\\s+dive|redoblar\\s+la\\s+apuesta|game\\s+changer|ecosistema\\s+integral)\\b",
+      "description": "Jerga corporativa inflada y sin significado propio.",
+      "remediation": "Sustituir por verbos de acción simples (analizar, resolver, priorizar)."
+    },
+    {
+      "id": "hesitation-markers-es",
+      "category": "hesitation",
+      "severity": "medium",
+      "regex": "\\b(?:parecía\\s+(?:tener|estar|ser|quedar|resistir)|quizás\\s+(?:sentía|era|estaba)|casi\\s+sin\\s+darse\\s+cuenta)\\b",
+      "description": "Atenuador de certeza o verbo de duda en narrativa.",
+      "remediation": "Emplear la forma asertiva directa (resistió, sintió, avanzó)."
+    }
+  ]
+}
