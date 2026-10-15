@@ -21,3 +21,15 @@ node tests/evals/evals.mjs score           # grade tests/evals/out/*.txt
 Flow: give each brief to a cheap model (we use Haiku subagents, one per skill), have it write only the result to `tests/evals/out/<id>.txt`, then run `score`. Grading is deterministic: `smooth-lint`, required/forbidden patterns, fact preservation, hook line lengths, KDP tag whitelist and byte ceiling, dinkus presence.
 
 Outputs in `tests/evals/out/` are git-ignored.
+
+## 3. Sandbox runs (`tests/sandbox/`)
+
+Simulates a user project with the framework installed and nothing else, then lets an agent do realistic tasks in English: polish landing copy, write a KDP blurb and hook, edit a fiction chapter, set up a novel project, clean release notes without touching facts, and build a pre-commit hook.
+
+```bash
+node tests/sandbox/setup.mjs /tmp/sp-sandbox      # framework copy, logging CLI shims, fixtures, one brief per scenario
+# give each briefs/<id>.md to an agent (we use Haiku), one agent per scenario
+node tests/sandbox/grade.mjs /tmp/sp-sandbox      # deterministic grading + record of framework CLI calls
+```
+
+Grading looks only at the result (lint, preserved facts, limits, generated files, behavior of the hook), plus `usage.log` to confirm the agent really used the CLI.
