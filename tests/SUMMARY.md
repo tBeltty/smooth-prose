@@ -53,6 +53,18 @@ Six scenarios run in a project directory where the framework is the only editori
 
 The first pass was 4/6. Two checks were too strict, and one fixture lacked the source facts needed for the requested blurb length; the agent had correctly refused to invent plot details. The checks and fixture were corrected and the scenarios re-run.
 
+### Layer 4: naive-agent runs
+
+The layer 2 and 3 prompts are structured (sections, limits, "use only these facts"), which suppresses slop by itself. `tests/naive/naive.mjs` instead sends what a user actually types: "Make me a landing page for Torque 1.0" plus the raw facts, with nothing about format, length or sources. Three conditions, three runs each: a bare agent, an agent whose `CLAUDE.md` holds the pasted directive (the README's Claude Code integration), and an agent with the full framework installed and pointed to by `CLAUDE.md`. Metrics were fixed before looking at any output.
+
+| Condition | Lint issues | Hype words | Invented numbers (mean) | Facts kept |
+|---|---|---|---|---|
+| bare | 0 | 0 | 1.7 | 10/10 |
+| directive | 0 | 0 | 0.3 | 10/10 |
+| full install | 0 | 0 | 0.0 | 10/10 |
+
+With the facts supplied, the bare model did not write hype either, so lint and hype do not separate the conditions. The difference is fabrication: bare runs invented code samples, a token budget of 200000 and derived percentages, and said so in their own summaries; runs with the framework invented less, and the full-install runs removed their own invented details after reading the skills and running the linter. Three runs per condition, so this is a direction, not a result. A vaguer request, where the model has to fill gaps itself, has not been run yet.
+
 ### Bugs the tests found
 
 The tests led to fixes for: missing English coverage (README examples were not detected), the linter not using the rule catalog, throat-clearing line numbers off by one, `init` ignoring script failures, a dead `$schema` URL written into generated configs, a wrong KDP tag count in the README (12 vs 13), and the scene-break auditor missing relative time jumps such as "Three days later".

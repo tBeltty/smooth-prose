@@ -35,3 +35,7 @@ node tests/sandbox/grade.mjs /tmp/sp-sandbox      # deterministic grading + reco
 ```
 
 Grading looks only at the result (lint, preserved facts, limits, generated files, behavior of the hook), plus `usage.log` to confirm the agent really used the CLI.
+
+## 4. Naive-agent runs (`tests/naive/`)
+
+A plain user request with no structure, run bare and with the framework installed. `node tests/naive/naive.mjs setup <root>` writes one prompt per run under `<root>/prompts/`; give each prompt, verbatim, to an agent; `node tests/naive/naive.mjs grade <root>` reports lint issues, hype words, invented numbers and facts kept per condition.
