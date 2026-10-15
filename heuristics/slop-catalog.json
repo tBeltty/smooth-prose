@@ -1,63 +1,203 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "name": "smooth-prose-heuristics",
-  "description": "Deterministic regular expressions and rule definitions for detecting AI slop patterns.",
+  "description": "Single source of truth for the deterministic AI-slop rules used by smooth-lint. Each rule is tagged with lang (en|es).",
   "rules": [
     {
-      "id": "contrast-binary-es",
+      "id": "contrast-es",
+      "lang": "es",
       "category": "contrast",
-      "severity": "high",
-      "regex": "\\bno\\s+(?:porque|por|era|es|se\\s+trata\\s+de)\\s+[^,.—;]+[,.—;]\\s*(?:sino|sino\\s+que|era|es|se\\s+trata\\s+de)\\s+[^,.—;]+",
-      "description": "Contraste binario artificial o negación telegrafiada en español.",
-      "remediation": "Afirmar el segundo término directamente sin la negación previa."
-    },
-    {
-      "id": "contrast-binary-en",
-      "category": "contrast",
-      "severity": "high",
-      "regex": "\\b(?:it'?s\\s+not\\s+(?:about|because)|not\\s+because|not\\s+just)\\s+[^,.—;]+[,.—;]\\s*(?:but\\s+(?:because|about|rather)|it'?s)\\s+[^,.—;]+",
-      "description": "Artificial binary contrast or telegraphed negation in English.",
-      "remediation": "State the affirmative claim directly without the preceding negative detour."
+      "severity": "error",
+      "name": "Contraste Binario (No X, sino Y)",
+      "regex": "\\b(?:no\\s+(?:es|era|fue|había|hay|se\\s+trata\\s+de|busca|quiere|se\\s+limita\\s+a)?\\s*(?:solo|solamente|únicamente|tan\\s+solo)?\\s+[^,.;\\n]{2,60},?\\s*sino(?:\\s+(?:también|que|el|la|los|las|un|una|de))?|no\\s+porque\\s+[^,.;\\n]{2,60},?\\s*sino\\s+porque|el\\s+problema\\s+no\\s+es\\s+[^,.;\\n]{2,40},?\\s*(?:sino|es)|más\\s+que\\s+un[a]?\\s+[^,.;\\n]{2,40},?\\s*(?:es|era|fue)\\s+un[a]?|lejos\\s+de\\s+ser\\s+[^,.;\\n]{2,40},?\\s*(?:es|era|fue))\\b",
+      "flags": "gi",
+      "fix": "Afirma la idea directamente sin el rodeo de la negación previa."
     },
     {
       "id": "throat-clearing-es",
-      "category": "throat_clearing",
-      "severity": "high",
-      "regex": "^\\s*(?:aquí\\s+está\\s+el\\s+detalle|seamos\\s+claros|seamos\\s+honestos|la\\s+verdad\\s+es\\s+que|hablemos\\s+de|déjame\\s+decirte\\s+algo|la\\s+realidad\\s+es\\s+simple)\\s*[:,-]",
-      "description": "Carraspeo o apertura teatral innecesaria en español.",
-      "remediation": "Eliminar la frase introductoria y comenzar directamente con el sujeto y verbo."
+      "lang": "es",
+      "category": "throat",
+      "severity": "error",
+      "name": "Carraspeo / Apertura Teatral",
+      "regex": "(?<=^|[\\n.?!]\\s*)(?:aquí\\s+está\\s+el\\s+detalle|seamos\\s+claros|seamos\\s+honestos|la\\s+verdad\\s+es\\s+que|hablemos\\s+de|déjame\\s+decirte\\s+algo|la\\s+realidad\\s+es\\s+simple)\\s*[:,-]",
+      "flags": "gi",
+      "fix": "Elimina el preámbulo y comienza directamente con el argumento o sujeto."
     },
     {
-      "id": "throat-clearing-en",
-      "category": "throat_clearing",
-      "severity": "high",
-      "regex": "^\\s*(?:here'?s\\s+the\\s+thing|let'?s\\s+be\\s+honest|make\\s+no\\s+mistake|the\\s+truth\\s+is|let'?s\\s+dive\\s+in|at\\s+the\\s+end\\s+of\\s+the\\s+day)\\s*[:,-]",
-      "description": "Theatrical throat-clearing or pompous rhetorical preamble in English.",
-      "remediation": "Delete the preamble and begin directly with the core message."
-    },
-    {
-      "id": "pseudo-profound-es",
-      "category": "closure",
-      "severity": "medium",
-      "regex": "\\b(?:el\\s+futuro\\s+(?:no\\s+está\\s+llegando|ya\\s+está\\s+aquí)|piénsalo\\s+bien|punto\\s+final|y\\s+eso\\s+está\\s+bien)\\b",
-      "description": "Cierre pseudo-profundo o cliché melodramático.",
-      "remediation": "Concluir con un dato verificable o una llamada a la acción concreta."
+      "id": "narrative-cliches-es",
+      "lang": "es",
+      "category": "narrative",
+      "severity": "warning",
+      "name": "Cliché Narrativo / Ficción LLM",
+      "regex": "\\b(?:en\\s+alerta\\s+máxima|sus\\s+sentidos\\s+alerta|la\\s+leyenda\\s+hecha\\s+carne|hech[oa]\\s+carne|nada\\s+menos\\s+que|invaluable|a\\s+gran\\s+escala|procesión\\s+silenciosa|tensión\\s+(?:abrumadora|palpable|electrizante|en\\s+el\\s+aire)|silencio\\s+(?:sepulcral|ensordecedor|tenso)|miradas\\s+furtivas|miradas\\s+cómplices|a\\s+una\\s+distancia\\s+respetuosa|un\\s+escalofrío\\s+recorrió\\s+su\\s+espalda|un\\s+nudo\\s+en\\s+la\\s+garganta|el\\s+peso\\s+del\\s+mundo\\s+sobre\\s+sus\\s+hombros)\\b",
+      "flags": "gi",
+      "fix": "Sustituye el cliché melodramático por una acción física o somática concreta."
     },
     {
       "id": "corporate-jargon-es",
+      "lang": "es",
       "category": "jargon",
-      "severity": "medium",
-      "regex": "\\b(?:desempacar|navegar\\s+(?:el\\s+panorama|los\\s+desafíos)|hacer\\s+un\\s+deep\\s+dive|redoblar\\s+la\\s+apuesta|game\\s+changer|ecosistema\\s+integral)\\b",
-      "description": "Jerga corporativa inflada y sin significado propio.",
-      "remediation": "Sustituir por verbos de acción simples (analizar, resolver, priorizar)."
+      "severity": "warning",
+      "name": "Jerga Corporativa Hueca",
+      "regex": "\\b(?:desempacar|navegar\\s+(?:el\\s+panorama|los\\s+desafíos)|hacer\\s+un\\s+deep\\s+dive|redoblar\\s+la\\s+apuesta|game\\s+changer|disruptivo|ecosistema\\s+integral|desbloquear\\s+el\\s+potencial|elevar\\s+(?:al\\s+siguiente\\s+nivel|tu\\s+experiencia))\\b",
+      "flags": "gi",
+      "fix": "Sustituye por un verbo o métrica precisa (resolver, analizar, optimizar)."
     },
     {
-      "id": "hesitation-markers-es",
+      "id": "pseudo-profound-es",
+      "lang": "es",
+      "category": "closure",
+      "severity": "warning",
+      "name": "Cierre Pseudo-Profundo",
+      "regex": "\\b(?:el\\s+futuro\\s+(?:no\\s+está\\s+llegando|ya\\s+está\\s+aquí)|piénsalo\\s+bien|punto\\s+final|y\\s+eso\\s+está\\s+bien)\\b",
+      "flags": "gi",
+      "fix": "Concluye con un dato comprobable o un desenlace específico."
+    },
+    {
+      "id": "hesitation-es",
+      "lang": "es",
       "category": "hesitation",
-      "severity": "medium",
-      "regex": "\\b(?:parecía\\s+(?:tener|estar|ser|quedar|resistir)|quizás\\s+(?:sentía|era|estaba)|casi\\s+sin\\s+darse\\s+cuenta)\\b",
-      "description": "Atenuador de certeza o verbo de duda en narrativa.",
-      "remediation": "Emplear la forma asertiva directa (resistió, sintió, avanzó)."
+      "severity": "info",
+      "name": "Atenuador de Certeza (Decálogo Quiroga)",
+      "regex": "\\b(?:parecía\\s+(?:tener|estar|ser|quedar|resistir|quebrar)|quizás\\s+(?:sentía|era|estaba)|casi\\s+sin\\s+darse\\s+cuenta)\\b",
+      "flags": "gi",
+      "fix": "Usa la forma asertiva directa (resistió, sintió, avanzó)."
+    },
+    {
+      "id": "contrast-en",
+      "lang": "en",
+      "category": "contrast",
+      "severity": "error",
+      "name": "Binary Contrast (Not X, but Y)",
+      "regex": "\\b(?:it(?:['’]?s|\\s+is)\\s+not\\s+(?:about|just|only|merely|simply)\\s+[^,.\\n]+,?\\s*(?:but\\s+|it(?:['’]?s|\\s+is)\\s+)(?:about\\s+)?|(?:isn['’]?t|is\\s+not|aren['’]?t|are\\s+not|wasn['’]?t|was\\s+not|weren['’]?t)\\s+(?:just\\s+|only\\s+)?(?:a\\s+|an\\s+|the\\s+)?[^,.\\n]{2,60},\\s*but\\s+(?:a\\s+|an\\s+|the\\s+|rather\\s+|instead\\s+)?|the\\s+(?:question|problem|issue|challenge)\\s+(?:isn['’]?t|is\\s+not)\\s+[^,.\\n]+,?\\s*(?:it['’]?s|it\\s+is)\\s+|not\\s+because\\s+(?:it['’]?s|it\\s+is)?\\s*[^,.\\n]+,?\\s*but\\s+because|not\\s+(?:just|only|merely|simply)\\s+[^,.\\n]+,?\\s*but\\s+(?:also\\s+)?)\\b",
+      "flags": "gi",
+      "fix": "State the affirmative claim directly without the artificial negative setup."
+    },
+    {
+      "id": "throat-clearing-en",
+      "lang": "en",
+      "category": "throat",
+      "severity": "error",
+      "name": "Throat-Clearing Preamble",
+      "regex": "(?<=^|[\\n.?!]\\s*)(?:here['’]?s\\s+the\\s+(?:thing|kicker|catch|deal)|let['’]?s\\s+be\\s+(?:honest|clear|real|frank)|let\\s+me\\s+be\\s+(?:honest|clear|frank)|make\\s+no\\s+mistake|the\\s+truth\\s+is|the\\s+reality\\s+is|let['’]?s\\s+(?:dive\\s+in|unpack\\s+this|face\\s+it)|at\\s+the\\s+end\\s+of\\s+the\\s+day|to\\s+be\\s+fair|i['’]?ll\\s+be\\s+honest)\\s*[:,\\u2014-]",
+      "flags": "gi",
+      "fix": "Delete the preamble and begin immediately with the subject and verb."
+    },
+    {
+      "id": "llm-openers-en",
+      "lang": "en",
+      "category": "throat",
+      "severity": "warning",
+      "name": "Generic LLM Opener / Filler",
+      "regex": "\\b(?:in\\s+today['’]?s\\s+(?:fast-paced|digital|ever-(?:changing|evolving)|modern|competitive)\\s+(?:world|landscape|era|age)|in\\s+the\\s+ever-(?:changing|evolving)\\s+(?:world|landscape)\\s+of|it['’]?s\\s+worth\\s+(?:noting|mentioning)\\s+that|it\\s+goes\\s+without\\s+saying|when\\s+it\\s+comes\\s+to)\\b",
+      "flags": "gi",
+      "fix": "Cut the filler and open with the concrete claim."
+    },
+    {
+      "id": "llm-vocabulary-en",
+      "lang": "en",
+      "category": "jargon",
+      "severity": "warning",
+      "name": "LLM-Favored Vocabulary",
+      "regex": "\\b(?:delv(?:e|es|ed|ing)(?:\\s+(?:into|deeper))?|(?:rich\\s+)?tapestry|testament\\s+to|a\\s+symphony\\s+of|ever-(?:evolving|changing)|plays?\\s+a\\s+(?:crucial|vital|pivotal|key)\\s+role|(?:the\\s+)?(?:realm|landscape)\\s+of|navigat(?:e|es|ed|ing)\\s+the\\s+(?:complexit(?:y|ies)|landscape|challenges))\\b",
+      "flags": "gi",
+      "fix": "Replace with a plain verb or a specific noun."
+    },
+    {
+      "id": "corporate-jargon-en",
+      "lang": "en",
+      "category": "jargon",
+      "severity": "warning",
+      "name": "Hollow Corporate Jargon",
+      "regex": "\\b(?:unpack(?:ing|s|ed)?|unlock(?:ing|s|ed)?\\s+(?:the\\s+|your\\s+|its\\s+)?(?:\\w+\\s+)?(?:potential|power|synerg\\w+|value)|leverag(?:e|es|ed|ing)\\s+(?:the\\s+power\\s+of\\s+|our\\s+|your\\s+)?(?:\\w+\\s+)?synerg\\w+|synerg(?:y|ies|istic)|game[- ]chang(?:er|ers|ing)|paradigm\\s+shift|deep\\s+dive|(?:to\\s+)?the\\s+next\\s+level|cutting[- ]edge|state[- ]of[- ]the[- ]art|best[- ]in[- ]class|seamless(?:ly)?|holistic|supercharg(?:e|es|ed|ing)|revolutioni[sz](?:e|es|ed|ing)|empower(?:s|ed|ing)?\\s+(?:your|you|teams?|businesses|users)|move\\s+the\\s+needle|circle\\s+back|low[- ]hanging\\s+fruit|double\\s+down)\\b",
+      "flags": "gi",
+      "fix": "Name the actual verb, metric or mechanism (analyze, cut, reduce, ship)."
+    },
+    {
+      "id": "marketing-hype-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Manipulative Marketing Hype",
+      "regex": "\\b(?:hidden\\s+secrets?|secrets?\\s+[^.\\n]{0,40}(?:never|don['’]?t|do\\s+not)\\s+want\\s+you\\s+to\\s+know|one\\s+weird\\s+trick|you\\s+won['’]?t\\s+believe|once[- ]in[- ]a[- ]lifetime|act\\s+now|(?:the\\s+)?ultimate\\s+guide|transform\\s+your\\s+life|unlimited\\s+potential|99%\\s+of\\s+people|nobody\\s+is\\s+talking\\s+about|don['’]?t\\s+get\\s+left\\s+behind)\\b",
+      "flags": "gi",
+      "fix": "Replace the hype with a verified number or a concrete outcome."
+    },
+    {
+      "id": "narrative-cliches-en",
+      "lang": "en",
+      "category": "narrative",
+      "severity": "warning",
+      "name": "Narrative Cliché / LLM Fiction",
+      "regex": "\\b(?:tension\\s+(?:hung|was\\s+(?:thick|palpable))[^.\\n]{0,20}|(?:hung|hangs)\\s+(?:thick|heavy)\\s+in\\s+the\\s+air|(?:palpable|thick)\\s+tension|(?:a\\s+)?shivers?\\s+(?:ran|run|runs|crawled|shot)\\s+down\\s+(?:his|her|their|my)\\s+spine|sent\\s+shivers\\s+down|(?:a\\s+)?lump\\s+in\\s+(?:his|her|their|my)\\s+throat|(?:a\\s+)?breath\\s+(?:he|she|they|i)\\s+(?:didn['’]?t|did\\s+not)\\s+know\\s+(?:he|she|they|i)\\s+(?:was|were|had\\s+been)\\s+holding|heart\\s+(?:pounded|hammered|raced)\\s+in\\s+(?:his|her|their|my)\\s+chest|eyes\\s+(?:sparkled|twinkled)|weight\\s+of\\s+the\\s+world\\s+on\\s+(?:his|her|their|my)\\s+shoulders|deafening\\s+silence|pregnant\\s+pause|time\\s+(?:seemed\\s+to\\s+)?(?:slowed|slow|stood\\s+still|stopped)|electric(?:ity)?\\s+in\\s+the\\s+air|knuckles\\s+(?:turned|went)\\s+white)\\b",
+      "flags": "gi",
+      "fix": "Replace the cliché with a concrete physical action or sensory detail."
+    },
+    {
+      "id": "pseudo-profound-en",
+      "lang": "en",
+      "category": "closure",
+      "severity": "warning",
+      "name": "Pseudo-Profound Closure",
+      "regex": "\\b(?:the\\s+future\\s+is\\s+(?:here|now)|and\\s+that['’]?s\\s+(?:okay|ok|fine)|think\\s+about\\s+that|let\\s+that\\s+sink\\s+in|full\\s+stop)\\b",
+      "flags": "gi",
+      "fix": "End on a verifiable fact or a specific outcome."
+    },
+    {
+      "id": "hesitation-en",
+      "lang": "en",
+      "category": "hesitation",
+      "severity": "info",
+      "name": "Certainty Weakener (Quiroga Decalogue)",
+      "regex": "\\b(?:(?:seemed|appeared|seems|appears)\\s+to\\b|almost\\s+as\\s+if|as\\s+if\\s+(?:it|he|she|they)\\s+(?:were|was)|without\\s+(?:quite\\s+)?realizing|(?:he|she|they)\\s+(?:could\\s+)?(?:almost|nearly)\\s+(?:feel|hear|see|taste)|(?:perhaps|maybe)\\s+(?:he|she|they|it)\\s+(?:felt|was|were))",
+      "flags": "gi",
+      "fix": "Use the direct assertive verb (resisted, felt, advanced)."
     }
-  ]
+  ],
+  "quotas": {
+    "es": {
+      "sombra": {
+        "max": 2,
+        "label": "sombra/sombras (sustituir por penumbra, tinieblas, silueta)"
+      },
+      "sombras": {
+        "max": 2,
+        "label": "sombra/sombras (sustituir por penumbra, tinieblas, silueta)"
+      },
+      "polvo": {
+        "max": 3,
+        "label": "polvo (alternar con hollín, herrumbre, ceniza, tierra seca)"
+      },
+      "polvoriento": {
+        "max": 2,
+        "label": "polvoriento (alternar con ceniciento, herrumbroso)"
+      },
+      "refugio": {
+        "max": 2,
+        "label": "refugio (alternar con bastión, guarida, escondite)"
+      }
+    },
+    "en": {
+      "shadow": {
+        "max": 2,
+        "label": "shadow/shadows (swap for gloom, silhouette, dusk)"
+      },
+      "shadows": {
+        "max": 2,
+        "label": "shadow/shadows (swap for gloom, silhouette, dusk)"
+      },
+      "dust": {
+        "max": 3,
+        "label": "dust (swap for soot, rust, ash, dry earth)"
+      },
+      "dusty": {
+        "max": 2,
+        "label": "dusty (swap for ashen, rusted)"
+      },
+      "refuge": {
+        "max": 2,
+        "label": "refuge (swap for bastion, den, hideout)"
+      }
+    }
+  }
 }

@@ -48,7 +48,7 @@ const BEFORE_AFTER = [
 ];
 
 for (const c of BEFORE_AFTER) {
-  test(`lint flags README "before": ${c.name}`, { todo: 'English coverage is thinner than the README implies' }, () => {
+  test(`lint flags README "before": ${c.name}`, () => {
     const r = lint(c.before);
     assert.ok(r.issues.length > 0, `no issue reported for: ${c.before}`);
   });
@@ -67,7 +67,7 @@ test('lint: README stdin example is flagged and exits 1', () => {
 
 test('lint: Spanish binary contrast + throat-clearing flagged', () => {
   const r = lint('Seamos claros: no es un problema de herramientas, sino de coordinación.');
-  assert.deepEqual(new Set(ids(r)), new Set(['contrast-no-sino', 'throat-clearing-es']));
+  assert.deepEqual(new Set(ids(r)), new Set(['contrast-es', 'throat-clearing-es']));
 });
 
 test('lint: clean text exits 0, warnings alone do not block', () => {
@@ -91,7 +91,7 @@ test('lint: markdown code blocks and inline code are ignored', () => {
   assert.equal(run('node', [LINT, f]).status, 0);
 });
 
-test('lint: reports 1-based line numbers', { todo: 'throat-clearing match starts at the preceding delimiter, so the line is off by one' }, () => {
+test('lint: reports 1-based line numbers', () => {
   const r = lint("Linea uno.\nLinea dos.\nHere's the thing: tres.\n");
   assert.equal(r.issues[0].line, 3);
 });
@@ -117,21 +117,82 @@ test('lint: burstiness rates monotone text as synthetic, varied text as organic'
   assert.match(lint(varied).cadence.rating, /Orgánico/);
 });
 
-test('catalog: heuristics/slop-catalog.json is valid and its regexes compile', () => {
+test('catalog: valid, every rule has lang/severity/fix and a compiling regex', () => {
   const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'heuristics', 'slop-catalog.json'), 'utf8'));
   assert.ok(cat.rules.length > 0);
-  for (const r of cat.rules) assert.doesNotThrow(() => new RegExp(r.regex, 'i'), r.id);
+  for (const r of cat.rules) {
+    assert.doesNotThrow(() => new RegExp(r.regex, r.flags), r.id);
+    assert.ok(['en', 'es'].includes(r.lang), `${r.id}: lang`);
+    assert.ok(['error', 'warning', 'info'].includes(r.severity), `${r.id}: severity`);
+    assert.ok(r.fix, `${r.id}: fix`);
+  }
+  assert.equal(new Set(cat.rules.map((r) => r.id)).size, cat.rules.length, 'duplicate rule ids');
 });
 
-test('catalog: README says EN & ES; catalog covers English jargon', { todo: 'catalog is ES-heavy; README claims "unpack"/"unlock synergies"' }, () => {
-  const cat = fs.readFileSync(path.join(ROOT, 'heuristics', 'slop-catalog.json'), 'utf8');
-  assert.match(cat, /unpack/i);
-  assert.match(cat, /synerg/i);
+test('catalog: EN and ES cover the same categories', () => {
+  const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'heuristics', 'slop-catalog.json'), 'utf8'));
+  const cats = (l) => new Set(cat.rules.filter((r) => r.lang === l).map((r) => r.category));
+  for (const c of ['contrast', 'throat', 'jargon', 'narrative', 'closure', 'hesitation']) {
+    assert.ok(cats('en').has(c), `en missing ${c}`);
+    assert.ok(cats('es').has(c), `es missing ${c}`);
+  }
+  assert.ok(Object.keys(cat.quotas.en).length > 0 && Object.keys(cat.quotas.es).length > 0);
 });
 
-test('catalog: linter actually loads the catalog (single source of truth)', { todo: 'smooth-lint.mjs hardcodes its own rules' }, () => {
-  const src = fs.readFileSync(LINT, 'utf8');
-  assert.match(src, /slop-catalog/);
+test('catalog: linter loads the catalog (single source of truth)', () => {
+  assert.match(fs.readFileSync(LINT, 'utf8'), /slop-catalog/);
+});
+
+// Every rule gets a positive and a negative sample per language.
+const SAMPLES = [
+  ['contrast-en', "It's not about speed, it's about trust.", 'Trust drives adoption.'],
+  ['contrast-en', 'It is not just a tool, it is a movement.', 'It is a tool.'],
+  ['contrast-en', "The fix isn't a patch, but a rewrite of the parser.", 'The fix is a rewrite of the parser.'],
+  ['throat-clearing-en', 'Intro line.\nMake no mistake: it breaks.', 'It breaks on empty input.'],
+  ['llm-openers-en', "In today's fast-paced world, teams ship faster.", 'Teams ship faster with CI.'],
+  ['llm-vocabulary-en', 'We delve into the logs and find a tapestry of errors.', 'We read the logs and find 12 errors.'],
+  ['corporate-jargon-en', 'Unlock the potential and leverage synergies.', 'Cut the build time by 40%.'],
+  ['marketing-hype-en', 'Discover the hidden secrets of growth.', 'We measured growth over 12 weeks.'],
+  ['narrative-cliches-en', 'A shiver ran down his spine as tension hung in the air.', 'Her hands shook over the keys.'],
+  ['pseudo-profound-en', 'Let that sink in.', 'Revenue grew 12% in Q3.'],
+  ['hesitation-en', 'The iron seemed to resist the blow.', 'The iron resisted the blow.'],
+  ['contrast-es', 'No es un problema técnico, sino de coordinación.', 'Es un problema de coordinación.'],
+  ['throat-clearing-es', 'Seamos claros: falla.', 'Falla con entradas vacías.'],
+  ['narrative-cliches-es', 'Hubo un silencio sepulcral.', 'Nadie habló.'],
+  ['corporate-jargon-es', 'Hay que desempacar el problema.', 'Hay que analizar el problema.'],
+  ['pseudo-profound-es', 'Piénsalo bien.', 'Las ventas subieron un 12%.'],
+  ['hesitation-es', 'El hierro parecía resistir el golpe.', 'El hierro resistió el golpe.'],
+];
+for (const [id, bad, good] of SAMPLES) {
+  test(`lint rule ${id}: flags "${bad.slice(0, 40).replace(/\n/g, ' ')}" and passes the clean version`, () => {
+    assert.ok(ids(lint(bad)).includes(id), `${id} not triggered; got ${ids(lint(bad))}`);
+    assert.ok(!ids(lint(good)).includes(id), `${id} false positive on clean text`);
+  });
+}
+
+test('lint: --lang restricts rules, bad value exits 2, auto detects language', () => {
+  const es = 'Seamos claros: no es un problema técnico, sino de coordinación.';
+  const en = run('node', [LINT, '--json', '--lang', 'en'], { input: es });
+  assert.equal(JSON.parse(en.stdout).issues.length, 0);
+  assert.equal(JSON.parse(en.stdout).lang, 'en');
+  assert.equal(lint(es).lang, 'es');
+  assert.equal(lint("Here's the thing: the plan is in the repo and it works for the team.").lang, 'en');
+  assert.equal(run('node', [LINT, '--lang', 'xx'], { input: 'hola' }).status, 2);
+});
+
+test('lint: <!-- smooth-lint-disable --> regions are skipped in markdown', () => {
+  const d = tmp();
+  const f = path.join(d, 'a.md');
+  fs.writeFileSync(f, "<!-- smooth-lint-disable -->\nHere's the thing: x.\n<!-- smooth-lint-enable -->\n\nTexto limpio.\n");
+  assert.equal(run('node', [LINT, f]).status, 0);
+  fs.writeFileSync(f, "<!-- smooth-lint-disable -->\nOk.\n<!-- smooth-lint-enable -->\n\nHere's the thing: x.\n");
+  assert.equal(run('node', [LINT, f]).status, 1);
+});
+
+test('docs checked by CI lint clean', () => {
+  for (const f of ['README.md', 'CONTRIBUTING.md', 'rules/anti-slop-directive.md']) {
+    assert.equal(run('node', [LINT, path.join(ROOT, f)]).status, 0, f);
+  }
 });
 
 test('cli: help, unknown command, missing file args', () => {

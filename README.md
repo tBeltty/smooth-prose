@@ -23,12 +23,15 @@ Large Language Models (LLMs) suffer from predictable convergence: symmetrical se
 
 Smooth Prose operates under the principle of **Minimum Effective Change (MEC)**: eliminate synthetic friction and repetition while fiercely preserving the author's voice and intent.
 
+<!-- smooth-lint-disable -->
 | Synthetic / AI Slop (Before) | Smooth Prose (After) | Rule Applied |
 | :--- | :--- | :--- |
 | *Let's be clear: the bottleneck isn't a lack of tools, but a failure of coordination.* | *Engineering bottlenecks stem from coordination friction across distributed teams.* | Strip throat-clearing & state affirmative assertion directly without binary contrast. |
 | *Take your development workflow to the next level with cutting-edge AI.* | *Audit dependencies and detect vulnerabilities in your terminal before each deployment.* | The Hero Formula: Concrete mechanism + tangible outcome. No vacuous slogans. |
 | *Discover the hidden secrets top marketers never want you to know.* | *Tested 400 cold outreach emails. One single subject line change doubled replies.* | 2-Line Hook Formula ($\le 40$ chars). Replace manipulative hype with verified data. |
 | *The iron seemed to almost resist Daniel's desperate blow. Tension hung thick in the air.* | *The iron resisted Daniel's blow. Cold sweat stung his knuckles.* | Quiroga Decalogue: Purge hesitation weakeners (*seemed, almost*) and ground tension somatically. |
+
+<!-- smooth-lint-enable -->
 
 ---
 
@@ -144,6 +147,9 @@ smooth-prose init
 
 # Lint sentence burstiness, cadence, and AI slop patterns
 smooth-prose lint document.md
+
+# Force the rule language (default: auto-detected per document; en | es | all)
+smooth-lint document.md --lang en
 
 # Forensic audit of lexical quotas and weakeners (.docx, .md, .txt)
 smooth-prose audit manuscript.docx
