@@ -11,12 +11,13 @@ Runs a strictly sequential, conditional state machine:
 The interface language follows --lang, SMOOTH_PROSE_LANG or the system locale.
 """
 
-import os, sys, json, re, argparse
+import os, sys, json, re, argparse, shutil
 from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import i18n
 
 LEXICON = i18n.load_heuristics("lexicon.json")
+_UI = {"lang": "en"}
 
 STR = {
     "en": {
@@ -55,6 +56,13 @@ STR = {
         "c_scenes": "  smooth-prose scenes <file>  -> Blind-cut detection (dinkus * * *)",
         "c_record": "  smooth-prose record <ch> <cat> <text> -> Canonical metaphor registry",
         "no_entities": "None registered yet (update with smooth-prose init)",
+        "eof": "No input available (stdin is closed). Run it in a terminal, or pass the mode explicitly:\n  smooth-prose init --mode universal|literature|marketing|web --non-interactive",
+        "bad_choice": "  '{c}' is not an option. Enter 1, 2, 3 or 4 (or universal, literature, marketing, web).",
+        "too_many": "Too many invalid answers. Run again, or pass --mode.",
+        "exists": "\n⚠ {f} already exists.",
+        "overwrite": "  Overwrite it? The current file is kept as {f}.bak [y/N]: ",
+        "kept": "Nothing changed. Existing configuration kept.",
+        "backup": "  Previous file saved as {f}.bak",
         "matrix": """# Narrative Pre-Flight Matrix (Smooth Prose)
 > **Project:** {project}
 > **Mode:** Literature / Narrative Fiction
@@ -127,6 +135,13 @@ STR = {
         "c_scenes": "  smooth-prose scenes <archivo>  -> Detección de cortes ciegos (dinkus * * *)",
         "c_record": "  smooth-prose record <cap> <cat> <texto> -> Registro de metáforas canónicas",
         "no_entities": "Ninguna registrada inicialmente (actualizar con smooth-prose init)",
+        "eof": "No hay entrada disponible (stdin está cerrado). Ejecútalo en una terminal o indica el modo:\n  smooth-prose init --mode universal|literature|marketing|web --non-interactive",
+        "bad_choice": "  '{c}' no es una opción. Escribe 1, 2, 3 o 4 (o universal, literature, marketing, web).",
+        "too_many": "Demasiadas respuestas inválidas. Vuelve a ejecutarlo o pasa --mode.",
+        "exists": "\n⚠ {f} ya existe.",
+        "overwrite": "  ¿Sobrescribirlo? El archivo actual se conserva como {f}.bak [s/N]: ",
+        "kept": "No se cambió nada. Se conserva la configuración existente.",
+        "backup": "  Archivo anterior guardado como {f}.bak",
         "matrix": """# Matriz de Pre-Vuelo Narrativa (Smooth Prose)
 > **Proyecto:** {project}
 > **Modo:** Literatura / Ficción Narrativa
@@ -192,6 +207,52 @@ DEFAULTS = {
 }
 
 
+MODE_NAMES = {"1": "universal", "2": "literature", "3": "marketing", "4": "web",
+              "universal": "universal", "literature": "literature", "literatura": "literature",
+              "marketing": "marketing", "web": "web"}
+
+
+def ask(prompt, default=None):
+    """input() that never raises on a closed stdin: returns the default, or exits with a clear message."""
+    try:
+        return input(prompt)
+    except EOFError:
+        if default is None:
+            print("\n" + STR[_UI["lang"]]["eof"], file=sys.stderr)
+            sys.exit(2)
+        print()
+        return default
+
+
+def choose_mode(S):
+    for _ in range(3):
+        print(f"\n{S['step1']}")
+        for k in ("opt1", "opt2", "opt3", "opt4"):
+            print(S[k])
+        raw = ask(S["select"]).strip().lower() or "1"
+        if raw in MODE_NAMES:
+            return MODE_NAMES[raw]
+        print(S["bad_choice"].format(c=raw))
+    print(S["too_many"], file=sys.stderr)
+    sys.exit(2)
+
+
+def write_safely(path, content, S, interactive):
+    """Writes a file; if it exists, asks (interactive) and always keeps the previous one as <file>.bak."""
+    if os.path.exists(path):
+        if interactive:
+            print(S["exists"].format(f=path))
+            if ask(S["overwrite"].format(f=path), default="n").strip().lower() not in S["lit_yes"][1:]:
+                print(S["kept"])
+                return False
+        shutil.copy2(path, path + ".bak")
+        print(S["backup"].format(f=path))
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    return True
+
+
+
 def scan_existing_files(directory=".", extensions=(".md", ".txt", ".docx")):
     """Finds text files, skipping build/dependency folders."""
     text_files = []
@@ -243,6 +304,8 @@ def generate_literature_matrix(project_name, entities, lang):
 
 def run_init(mode_override=None, non_interactive=False, lang="en"):
     S, D = STR[lang], DEFAULTS[lang]
+    _UI["lang"] = lang
+    interactive = not non_interactive and not mode_override
     print("\n" + "=" * 68)
     print(f"   {S['banner']}")
     print("=" * 68)
@@ -253,11 +316,7 @@ def run_init(mode_override=None, non_interactive=False, lang="en"):
     elif non_interactive:
         mode = "universal"
     else:
-        print(f"\n{S['step1']}")
-        for k in ("opt1", "opt2", "opt3", "opt4"):
-            print(S[k])
-        choice = input(S["select"]).strip() or "1"
-        mode = {"1": "universal", "2": "literature", "3": "marketing", "4": "web"}.get(choice, "universal")
+        mode = choose_mode(S)
 
     print(S["mode_on"].format(m=mode.upper()))
     project_name = os.path.basename(os.path.abspath("."))
@@ -299,14 +358,14 @@ def run_init(mode_override=None, non_interactive=False, lang="en"):
             print(S["lit_found"])
             for idx, ent in enumerate(detected_entities, 1):
                 print(f"    {idx}. {ent}")
-            ans = input(S["lit_confirm"]).strip().lower()
+            ans = ask(S["lit_confirm"], default="").strip().lower()
             if ans in S["lit_yes"]:
                 protected_entities = detected_entities
             else:
-                custom = input(S["lit_custom"]).strip()
+                custom = ask(S["lit_custom"], default="").strip()
                 protected_entities = [e.strip() for e in custom.split(",") if e.strip()]
         elif not non_interactive:
-            custom = input(S["lit_custom2"]).strip()
+            custom = ask(S["lit_custom2"], default="").strip()
             if custom:
                 protected_entities = [e.strip() for e in custom.split(",") if e.strip()]
 
@@ -320,9 +379,8 @@ def run_init(mode_override=None, non_interactive=False, lang="en"):
         }
 
         preflight_file = "Matriz_PreVuelo.md"
-        with open(preflight_file, "w", encoding="utf-8") as pf:
-            pf.write(generate_literature_matrix(project_name, protected_entities, lang))
-        print(S["lit_matrix"].format(f=preflight_file))
+        if write_safely(preflight_file, generate_literature_matrix(project_name, protected_entities, lang), S, interactive):
+            print(S["lit_matrix"].format(f=preflight_file))
 
     elif mode == "marketing":
         print(S["mkt_h"])
@@ -350,8 +408,8 @@ def run_init(mode_override=None, non_interactive=False, lang="en"):
         print(S["web_1"])
 
     out_path = "smooth-prose.config.json"
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
+    if not write_safely(out_path, json.dumps(config, indent=2, ensure_ascii=False), S, interactive):
+        return 0
 
     print(S["saved"].format(f=out_path))
     print("=" * 68)

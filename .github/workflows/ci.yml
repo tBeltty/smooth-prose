@@ -28,6 +28,9 @@ jobs:
         run: |
           chmod +x bin/smooth-prose bin/smooth-lint.mjs scripts/*.py
 
+      - name: Run test suite
+        run: npm test
+
       - name: Run Smooth Lint (Cadence & AI Slop Check)
         run: |
           node bin/smooth-lint.mjs README.md

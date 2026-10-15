@@ -8,22 +8,52 @@
     "smooth-prose": "bin/smooth-prose",
     "smooth-lint": "bin/smooth-lint.mjs"
   },
+  "files": [
+    "bin",
+    "scripts",
+    "heuristics",
+    "rules",
+    "skills",
+    "integrations",
+    "plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "lint": "node bin/smooth-lint.mjs",
     "test": "node --test tests/cli.test.mjs",
     "evals:list": "node tests/evals/evals.mjs list",
     "evals:score": "node tests/evals/evals.mjs score"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
+    "agents",
+    "ai-slop",
     "anti-slop",
-    "writing",
-    "linter",
     "burstiness",
-    "nlp",
-    "editorial",
+    "claude",
     "copywriting",
-    "fiction"
+    "cursor",
+    "editorial",
+    "en",
+    "es",
+    "fiction",
+    "linter",
+    "nlp",
+    "prose-linter",
+    "style-guide",
+    "writing"
   ],
+  "homepage": "https://github.com/tBeltty/smooth-prose#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tBeltty/smooth-prose.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tBeltty/smooth-prose/issues"
+  },
   "author": "Smooth Prose Contributors",
   "license": "MIT"
 }

@@ -51,6 +51,7 @@ smooth-prose/
 │   ├── slop-catalog.json           # Deterministic regex patterns (EN & ES) for zero-AI linting
 │   └── lexicon.json                # Per-language lexicons: quotas, weakeners, banned terms, scene openers
 ├── scripts/
+│   ├── i18n.py                     # Language detection and resolution (EN | ES)
 │   ├── lexicon_audit.py            # Canonical lexicon & weakeners auditor (.docx, .md, .txt)
 │   ├── audit_scene_breaks.py       # Blind cuts & scene break auditor (* * *)
 │   ├── append_to_lexicon.py        # Cross-chapter metaphor recorder
@@ -58,8 +59,9 @@ smooth-prose/
 ├── bin/
 │   ├── smooth-prose                # Unified CLI runner (Python 3)
 │   └── smooth-lint.mjs             # Zero-dependency Node.js burstiness & regex linter
-├── smooth-prose.config.json        # Workspace project configuration (generated via init)
-└── integrations/                   # Setup guides for Antigravity, Claude, and Cursor
+├── integrations/                   # Setup guides for Antigravity, Claude, and Cursor
+├── tests/                          # Claim tests, skill evals, sandbox and naive-agent runs
+└── smooth-prose.config.json        # Created in YOUR project by `smooth-prose init` (not part of this repo)
 ```
 
 ### The 4 Modular Skills
@@ -140,7 +142,35 @@ ln -s "$(pwd)/bin/smooth-prose" /usr/local/bin/smooth-prose
 ln -s "$(pwd)/bin/smooth-lint.mjs" /usr/local/bin/smooth-lint
 ```
 
-### 2. Available Commands
+### 2. Quick start
+
+```bash
+cd my-project
+smooth-prose init
+```
+
+Installing asks nothing. `init` is where you choose the kind of content, and it only writes files in the current folder:
+
+```
+[Step 1/2] What is the editorial scope of this project?
+  1) Universal / All Copy
+  2) Literature / Narrative Fiction
+  3) Copywriting & Marketing
+  4) Web Design & Product
+```
+
+| You pick | It also asks / creates |
+| :--- | :--- |
+| 1 Universal | `smooth-prose.config.json` with the cadence and repetition guardrails |
+| 2 Literature | Scans your `.md`/`.txt`/`.docx` files for names, asks you to confirm the protected entities, creates `smooth-prose.config.json` and `Matriz_PreVuelo.md` |
+| 3 Marketing | Config with the KDP limits (4,000 bytes, 13 HTML tags) and two-line hook length |
+| 4 Web | Config with the hero formula and CTA rules |
+
+Running `init` again over an existing config asks before overwriting and keeps the old file as `smooth-prose.config.json.bak`. Without a terminal (CI, scripts) pass the mode: `smooth-prose init --mode web --non-interactive`. The interface language follows `--lang`, `SMOOTH_PROSE_LANG` or your system locale.
+
+`init` does not change your AI assistant's instructions. To make an assistant follow the standards, add them to its configuration with the guide in [Integrations](#integrations).
+
+### 3. Available Commands
 
 ```bash
 # Initialize workspace configuration & Lore Protection
@@ -214,6 +244,15 @@ Smooth Prose integrates natively into modern AI coding assistants:
 * **Google Antigravity / Gemini CLI:** See [integrations/antigravity.md](integrations/antigravity.md) to install as a native plugin.
 * **Anthropic Claude (Code / Desktop):** See [integrations/claude.md](integrations/claude.md) to configure `CLAUDE.md`.
 * **Cursor / Windsurf:** See [integrations/cursor.md](integrations/cursor.md) to configure `.cursorrules`.
+
+---
+
+## Scope and Limits
+
+* The linter is deterministic and heuristic: it flags patterns, it does not understand meaning. Most findings are warnings; only binary contrasts and throat-clearing block (exit code 1).
+* Rules cover English and Spanish. Other languages are not analyzed.
+* The four skills are prompts for an AI assistant. Their effect depends on the model; see [tests/SUMMARY.md](tests/SUMMARY.md) for what was measured and what was not.
+* Direct quotes are never flagged, and lines marked with a cross mark or starting with `Avoid:` are skipped, so documentation can quote slop.
 
 ---
 

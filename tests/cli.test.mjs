@@ -372,6 +372,52 @@ for (const mode of ['universal', 'literature', 'marketing', 'web']) {
   });
 }
 
+test('init: closed stdin exits 2 with a clear message and no traceback', () => {
+  const r = run('python3', [path.join(SCRIPTS, 'init_project.py')], { cwd: tmp(), input: '' });
+  assert.equal(r.status, 2);
+  assert.doesNotMatch(r.stdout + r.stderr, /Traceback|EOFError/);
+  assert.match(r.stdout + r.stderr, /--non-interactive/);
+});
+
+test('init: asks for the content type, re-asks on an invalid answer, accepts names and numbers', () => {
+  const d = tmp();
+  const r = run('python3', [path.join(SCRIPTS, 'init_project.py'), '--lang', 'en'], { cwd: d, input: '9\nweb\n' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /What is the editorial scope/);
+  assert.match(r.stdout, /'9' is not an option/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d, 'smooth-prose.config.json'), 'utf8')).mode, 'web');
+  const d2 = tmp();
+  run('python3', [path.join(SCRIPTS, 'init_project.py'), '--lang', 'en'], { cwd: d2, input: '3\n' });
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d2, 'smooth-prose.config.json'), 'utf8')).mode, 'marketing');
+  const bad = run('python3', [path.join(SCRIPTS, 'init_project.py'), '--lang', 'en'], { cwd: tmp(), input: 'x\ny\nz\n' });
+  assert.equal(bad.status, 2);
+});
+
+test('init: never overwrites a config silently (asks, keeps a .bak; non-interactive keeps a .bak)', () => {
+  const d = tmp();
+  const init = (input, extra = []) => run('python3', [path.join(SCRIPTS, 'init_project.py'), '--lang', 'en', ...extra], { cwd: d, input });
+  init('4\n');
+  const kept = init('1\nn\n');
+  assert.match(kept.stdout, /already exists/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d, 'smooth-prose.config.json'), 'utf8')).mode, 'web');
+  assert.ok(!fs.existsSync(path.join(d, 'smooth-prose.config.json.bak')));
+  init('1\ny\n');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d, 'smooth-prose.config.json'), 'utf8')).mode, 'universal');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d, 'smooth-prose.config.json.bak'), 'utf8')).mode, 'web');
+  init('', ['--mode', 'marketing', '--non-interactive']);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d, 'smooth-prose.config.json.bak'), 'utf8')).mode, 'universal');
+});
+
+test('package: npm pack ships the runtime and none of the tests', () => {
+  const r = run('npm', ['pack', '--dry-run', '--json'], { cwd: ROOT });
+  const files = JSON.parse(r.stdout)[0].files.map((f) => f.path);
+  for (const must of ['bin/smooth-prose', 'bin/smooth-lint.mjs', 'scripts/i18n.py', 'heuristics/slop-catalog.json', 'heuristics/lexicon.json', 'README.md', 'LICENSE'])
+    assert.ok(files.includes(must), `missing ${must}`);
+  assert.ok(!files.some((f) => f.startsWith('tests/')), 'tests/ must not ship');
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  for (const k of ['repository', 'bugs', 'homepage', 'engines', 'license']) assert.ok(pkg[k], `package.json lacks ${k}`);
+});
+
 test('init: universal config matches the README example (globs, window 120)', () => {
   const d = tmp();
   run('python3', [path.join(SCRIPTS, 'init_project.py'), '--mode', 'universal', '--non-interactive'], { cwd: d });

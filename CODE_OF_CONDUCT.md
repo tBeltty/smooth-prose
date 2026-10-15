@@ -22,8 +22,10 @@ community include:
 * Giving and gracefully accepting constructive feedback
 * Accepting responsibility and apologizing to those affected by our mistakes,
   and learning from the experience
+<!-- smooth-lint-disable -->
 * Focusing on what is best not just for us as individuals, but for the
   overall community
+<!-- smooth-lint-enable -->
 
 Examples of unacceptable behavior include:
 
@@ -47,6 +49,10 @@ or harmful.
 
 This Code of Conduct applies within all community spaces, and also applies when
 an individual is officially representing the community in public spaces.
+
+## Reporting
+
+Report unacceptable behavior privately through the repository's [Security Advisories tab](https://github.com/tBeltty/smooth-prose/security/advisories) (choose "Report a vulnerability" and mark it as a conduct report). Only the maintainers can read it. We review every report promptly and fairly, and we respect the privacy and security of whoever reports an incident.
 
 ## Enforcement Guidelines
 
