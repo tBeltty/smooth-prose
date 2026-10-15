@@ -4,7 +4,7 @@ Smooth Prose is tested in three layers, from fully deterministic checks to runs 
 
 ```bash
 npm test                                 # layer 1
-node tests/evals/evals.mjs score         # layer 2
+node tests/evals/evals.mjs compare       # layer 2 (after generating sets, see tests/README.md)
 node tests/sandbox/setup.mjs <root>      # layer 3: prepare the sandbox
 node tests/sandbox/grade.mjs <root>      # layer 3: grade the results
 ```
@@ -14,7 +14,7 @@ node tests/sandbox/grade.mjs <root>      # layer 3: grade the results
 | Layer | What it checks | Result |
 |---|---|---|
 | 1. Claim tests | 60 `node:test` tests, zero dependencies | 60 pass, 0 pending |
-| 2. Skill evals | 11 cases across core, web, marketing, narrative | 11/11 |
+| 2. Skill evals | 11 cases across core, web, marketing, narrative, 3 runs each | 32/33 with skills, 23/33 control |
 | 3. Sandbox runs | 6 English scenarios, 38 framework CLI calls logged | 6/6 |
 
 ### Layer 1: claim tests
@@ -32,7 +32,18 @@ node tests/sandbox/grade.mjs <root>      # layer 3: grade the results
 
 ### Layer 2: skill behavior evals
 
-A small model rewrites each case following its `SKILL.md`, and a deterministic scorer checks the output for linter-clean text, preserved facts and quotes, hook lines of 40 characters or fewer, the KDP tag whitelist and 4,000-byte ceiling, and the presence of a dinkus.
+A small model rewrites each case following its `SKILL.md`, and a deterministic scorer checks the output for linter-clean text, preserved facts and quotes, hook lines of 40 characters or fewer, the KDP tag whitelist and 4,000-byte ceiling, and the presence of a dinkus. Each case runs three times with the skill and three times as a control: same task and input, without the skill or directive.
+
+| Case | With skill | Control |
+|---|---|---|
+| core-fact-shield | 3/3 | 1/3 |
+| core-spanish-contrast | 3/3 | 1/3 |
+| web-error | 3/3 | 0/3 |
+| marketing-hook | 2/3 | 0/3 |
+| the other 7 cases | 21/21 | 21/21 |
+| **Total** | **32/33** | **23/33** |
+
+The skills made a difference on four cases: avoiding binary contrasts and blame in error messages, and respecting the 40-character hook limit. On the other seven the control passed as well, so those cases do not discriminate and the model already does them unprompted. The one failure with skills was a hook with both lines over 40 characters.
 
 ### Layer 3: sandbox agent runs
 
@@ -46,6 +57,8 @@ The tests led to fixes for: missing English coverage (README examples were not d
 
 ### Known limits
 
-- Each agent scenario was run once, with a single small model.
-- There are no control runs without the skills yet. These runs show the framework is usable and its checks work, not that the skills improve output over no skills.
+- Three runs per eval case and one per sandbox scenario, with a single small model. The differences are indicative, not statistically established.
+- Some checks encode the skills' own rules (for example the 40-character hook), which the control was not told. That measures what the skills add, not general writing quality.
+- Several eval inputs echo examples in the skills, which favors the with-skill runs. Held-out inputs are still to do.
+- The sandbox scenarios have no control runs yet.
 - Spanish has deterministic tests but no agent scenarios yet.

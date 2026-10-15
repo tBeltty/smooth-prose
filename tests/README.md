@@ -14,11 +14,13 @@ The four skills are prompts, so their behavior needs a model to run. The harness
 
 ```bash
 node tests/evals/evals.mjs list            # case ids (cases.json)
-node tests/evals/evals.mjs prompt <id>     # brief to hand to a model
-node tests/evals/evals.mjs score           # grade tests/evals/out/*.txt
+node tests/evals/evals.mjs prompt <id> --set with-r1      # brief to hand to a model
+node tests/evals/evals.mjs prompt <id> --set control-r1   # same task without the skill
+node tests/evals/evals.mjs score --set with-r1            # grade tests/evals/out/with-r1/*.txt
+node tests/evals/evals.mjs compare                        # with-skill vs control pass rates
 ```
 
-Flow: give each brief to a cheap model (we use Haiku subagents, one per skill), have it write only the result to `tests/evals/out/<id>.txt`, then run `score`. Grading is deterministic: `smooth-lint`, required/forbidden patterns, fact preservation, hook line lengths, KDP tag whitelist and byte ceiling, dinkus presence.
+Flow: give each brief to a cheap model (we use Haiku subagents, one per skill), have it write only the result to the path in the brief, then run `score`. Any set named `control*` gets the task without the skill, so `compare` can show what the skill adds. Grading is deterministic: `smooth-lint`, required/forbidden patterns, fact preservation, hook line lengths, KDP tag whitelist and byte ceiling, dinkus presence.
 
 Outputs in `tests/evals/out/` are git-ignored.
 
