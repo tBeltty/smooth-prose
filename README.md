@@ -152,6 +152,9 @@ smooth-prose lint document.md
 # Force the rule language (default: auto-detected per document; en | es | all)
 smooth-lint document.md --lang en
 
+# Metrics you supplied are not flagged as unsourced when they appear in your brief
+smooth-lint landing.md --facts brief.txt
+
 # Forensic audit of lexical quotas and weakeners (.docx, .md, .txt)
 smooth-prose audit manuscript.docx
 

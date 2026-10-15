@@ -172,6 +172,86 @@
       "regex": "\\b(?:why\\s+(?:teams|developers|engineers|companies|people)\\s+(?:love|choose|trust|move\\s+to|switch\\s+to|use)\\s+\\w+|(?:trusted|loved|used)\\s+by\\s+(?:thousands|hundreds|millions|teams|developers|engineers|leading|top)|(?:teams|developers|engineers)\\s+(?:love|trust)\\s+\\w+|join\\s+(?:thousands|hundreds|millions|\\d[\\d,]*)\\s+(?:of\\s+)?(?:teams|developers|engineers|users)|what\\s+(?:our\\s+)?(?:customers|users|developers)\\s+(?:are\\s+)?say(?:ing)?)\\b",
       "flags": "gi",
       "fix": "Remove it, or replace it with a named customer, a number and a source you can show."
+    },
+    {
+      "id": "unsourced-metric-en",
+      "lang": "en",
+      "category": "metric",
+      "severity": "warning",
+      "name": "Performance Metric Without a Source",
+      "regex": "(?<!(?:benchmark|measured|measurement|methodology|source|according\\s+to|appendix|n\\s?=\\s?\\d|https?:\\/\\/|\\[\\d+\\]|see\\s+\\w+)[^\\n]*)(?:\\b(?:up\\s+to\\s+)?\\d+(?:\\.\\d+)?x\\s+(?:faster|slower|more|less|higher|lower|better|cheaper|throughput|speed|improvement|reduction)\\b|\\b\\d+(?:\\.\\d+)?\\s?%\\s+(?:faster|slower|fewer|less|more|lower|higher|smaller|reduced|reduction|improvement|nominal|uptime|accuracy)\\b|(?:<|≤|sub-|under\\s+|below\\s+|less\\s+than\\s+)\\s?\\d+(?:\\.\\d+)?\\s?(?:ms|µs|us|ns)\\b|\\b(?:99|98)\\.\\d+\\s?%|(?<=^|\\n)[ \\t]*[<>~≤]?\\s?\\d+(?:\\.\\d+)?\\s?(?:x|%|ms|µs)[ \\t]*(?=\\n|$))(?![^\\n]*(?:benchmark|measured|measurement|methodology|source|according\\s+to|appendix|n\\s?=\\s?\\d|https?:\\/\\/|\\[\\d+\\]|see\\s+\\w+))",
+      "flags": "gi",
+      "fix": "Name the benchmark, dataset, date and baseline, or remove the number."
+    },
+    {
+      "id": "absolute-claim-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Absolute Claim",
+      "regex": "\\b(?:zero\\s+(?:context\\s+|contaminated\\s+)?(?:drift|downtime|latency|overhead|errors?|bugs?|failures?|hallucinations?|contaminat\\w+|risk|friction|compromise)|100\\s?%\\s+(?:secure|reliable|accurate|safe|uptime|guaranteed|private)|(?:never|always)\\s+(?:fails?|breaks?|crash\\w*|loses?|misses?)|certified\\s+(?:secure|safe)|unbreakable|bulletproof|foolproof|flawless(?:ly)?|guaranteed\\s+to|perfect(?:ly)?\\s+(?:secure|reliable|accurate|safe)|instantaneous(?:ly)?|in\\s+microseconds)\\b",
+      "flags": "gi",
+      "fix": "State the measured bound, the conditions and the exceptions instead of an absolute."
+    },
+    {
+      "id": "competitor-strawman-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Unsupported Attack on Alternatives",
+      "regex": "\\b(?:(?:standard|traditional|typical|usual|legacy|conventional|most|other|existing|primitive|basic|simple)\\s+(?:agent\\s+)?(?:harnesses|frameworks|tools|libraries|solutions|platforms|alternatives|approaches|systems|wrappers)\\s+(?:are|fail|collapse|break|suffer|struggle|can(?:['’]t|not)|pollute|bloat|lack|rely|only|just)\\b|why\\s+(?:standard|traditional|typical|most|other|existing)\\s+\\w+(?:\\s+\\w+)?\\s+fail|unlike\\s+(?:other|most|traditional|typical|standard)\\s+\\w+|(?:outclass|outclasses|obliterates?|crushes|destroys)\\s+(?:primitive|traditional|every|all|other|the\\s+usual|the\\s+competition)|primitive\\s+(?:script|tool|agent|librar|framework)\\w*|vulnerable\\s+to\\s+agent\\s+escape)",
+      "flags": "gi",
+      "fix": "Compare against a named alternative with a measured difference, or describe your product only."
+    },
+    {
+      "id": "hype-vocabulary-en",
+      "lang": "en",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Hype Vocabulary",
+      "regex": "\\b(?:industrial|enterprise|military|bank)[- ]grade|battle[- ]tested|rock[- ]solid|blazing(?:ly)?[- ]fast|lightning[- ]fast|unparalleled|unrivall?ed|second\\s+to\\s+none|stop\\s+babysitting|pure\\s+(?:power|torque|speed)|engineered\\s+for\\s+(?:production\\s+)?(?:autonomy|performance|scale)",
+      "flags": "gi",
+      "fix": "Replace the adjective with the property it stands for, and a number if you have one."
+    },
+    {
+      "id": "unsourced-metric-es",
+      "lang": "es",
+      "category": "metric",
+      "severity": "warning",
+      "name": "Métrica de Rendimiento Sin Fuente",
+      "regex": "(?<!(?:benchmark|medido|medición|metodología|fuente|según|apéndice|n\\s?=\\s?\\d|https?:\\/\\/|\\[\\d+\\])[^\\n]*)(?:\\b(?:hasta\\s+)?\\d+(?:[.,]\\d+)?x\\s+(?:más|menos|mejor|peor|rápid\\w+|lent\\w+)\\b|\\b\\d+(?:[.,]\\d+)?\\s?%\\s+(?:más\\s+rápid\\w+|menos|más|de\\s+mejora|de\\s+reducción|reducido|disponibilidad)\\b|(?:<|≤|menos\\s+de\\s+|por\\s+debajo\\s+de\\s+|sub-)\\s?\\d+(?:[.,]\\d+)?\\s?(?:ms|µs)\\b|\\b99[.,]\\d+\\s?%)(?![^\\n]*(?:benchmark|medido|medición|metodología|fuente|según|apéndice|https?:\\/\\/|\\[\\d+\\]))",
+      "flags": "gi",
+      "fix": "Indica el benchmark, el conjunto de datos, la fecha y la base de comparación, o elimina la cifra."
+    },
+    {
+      "id": "absolute-claim-es",
+      "lang": "es",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Afirmación Absoluta",
+      "regex": "\\b(?:cero\\s+(?:deriva|latencia|fallos?|errores?|caídas|riesgo|downtime|alucinaciones)|100\\s?%\\s+(?:seguro|fiable|confiable|preciso|garantizado)|inquebrantable|infalible|a\\s+prueba\\s+de\\s+balas|certificado\\s+(?:seguro|a\\s+prueba)|instantáneamente|en\\s+microsegundos|nunca\\s+(?:falla|se\\s+rompe|pierde))\\b",
+      "flags": "gi",
+      "fix": "Indica el límite medido, las condiciones y las excepciones en lugar de un absoluto."
+    },
+    {
+      "id": "competitor-strawman-es",
+      "lang": "es",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Ataque Genérico a la Competencia",
+      "regex": "\\b(?:(?:los\\s+|las\\s+)?(?:frameworks?|herramientas|soluciones|plataformas|arneses|alternativas|librerías|bibliotecas)\\s+(?:tradicionales|convencionales|habituales|típic\\w+|estándar|existentes|primitiv\\w+)\\s+(?:fallan|colapsan|se\\s+rompen|sufren|no\\s+pueden|carecen|son)|a\\s+diferencia\\s+de\\s+(?:otros|las\\s+demás|los\\s+demás|la\\s+competencia)|por\\s+qué\\s+(?:las?\\s+)?\\w+\\s+(?:tradicionales|estándar|típic\\w+)\\s+fallan|supera\\s+a\\s+(?:las?\\s+)?(?:alternativas\\s+)?primitiv\\w+)",
+      "flags": "gi",
+      "fix": "Compara con una alternativa concreta y una diferencia medida, o describe solo tu producto."
+    },
+    {
+      "id": "hype-vocabulary-es",
+      "lang": "es",
+      "category": "hype",
+      "severity": "warning",
+      "name": "Vocabulario Inflado",
+      "regex": "\\b(?:de\\s+grado\\s+(?:industrial|empresarial|militar)|a\\s+toda\\s+prueba|imbatible|sin\\s+igual|inigualable|a\\s+la\\s+velocidad\\s+del\\s+rayo|ultrarrápid\\w+)\\b",
+      "flags": "gi",
+      "fix": "Sustituye el adjetivo por la propiedad que representa y, si la tienes, una cifra."
     }
   ],
   "quotas": {

@@ -1,0 +1,30 @@
+Zero Context Drift • Micro-Loop State Snapshots • Sub-12ms Loopback
+Stop babysitting brittle agent loops.
+Harness pure torque.
+Most harnesses collapse under cascading tool faults and prompt bloat.
+Torque 1.0 delivers an industrial-grade runtime: deterministically isolated state machines, speculative multi-tool pipelines, and transactional rollback.
+Deploy Torque Agent
+14.2x
+Throughput over raw LangGraph/Crew
+0.02%
+Hallucinatory tool invocation rate
+< 8ms
+Cold state hydration overhead
+ACID
+Atomic agent rollbacks & replay
+Speculative Rollback Time:
+1.4 ms
+Memory Compaction:
+89.4% reduced
+Tool Execution Sandbox Health
+99.98% nominal
+Why standard harnesses fail, and how Torque fixes it.
+Standard agent harnesses are wrappers around simple prompt loops. Torque is a purpose-built runtime designed like an operating system kernel.
+When an agent hits a dead end or bad tool output, traditional harnesses pollute memory with error traces.
+Zero contaminated context windows
+Up to 7.8x faster completion
+Certified secure runtime isolation
+See how Torque outclasses primitive script-based agent libraries.
+Unmanaged context growth causing hallucinations after ~15 steps.
+Dynamic context pruning & semantic compaction preserves zero drift over 500+ turns.
+Reverts memory to clean checkpoint in <1.5ms.

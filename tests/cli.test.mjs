@@ -132,7 +132,7 @@ test('catalog: valid, every rule has lang/severity/fix and a compiling regex', (
 test('catalog: EN and ES cover the same categories', () => {
   const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'heuristics', 'slop-catalog.json'), 'utf8'));
   const cats = (l) => new Set(cat.rules.filter((r) => r.lang === l).map((r) => r.category));
-  for (const c of ['contrast', 'throat', 'jargon', 'narrative', 'closure', 'hesitation']) {
+  for (const c of ['contrast', 'throat', 'jargon', 'narrative', 'closure', 'hesitation', 'hype', 'metric']) {
     assert.ok(cats('en').has(c), `en missing ${c}`);
     assert.ok(cats('es').has(c), `es missing ${c}`);
   }
@@ -161,6 +161,25 @@ const SAMPLES = [
   ['landing-cliche-en', 'Everything an agent needs to finish the job.', 'An agent needs a model and a set of tools.'],
   ['social-proof-en', 'Why teams love Halyard.', 'Two teams reported results; the numbers are in the appendix.'],
   ['social-proof-en', 'Trusted by thousands of developers.', 'Used by the internal build team since March.'],
+  ['unsourced-metric-en', 'Torque delivers 14.2x faster throughput.', 'Median task time fell from 14.8 to 6.4 minutes on the 300-task benchmark.'],
+  ['unsourced-metric-en', 'Cold start under 8ms.', 'The timeout is 8 seconds.'],
+  ['unsourced-metric-en', 'Uptime of 99.98% nominal.', 'We target an uptime above 99% (measured monthly, see the status page).'],
+  ['unsourced-metric-en', 'Throughput\n14.2x\nover the baseline', 'Throughput\nincreased over the baseline'],
+  ['absolute-claim-en', 'Zero context drift over 500 turns.', 'Context drift stayed below 2% over 500 turns in our tests.'],
+  ['absolute-claim-en', 'Certified secure runtime.', 'The runtime passed the SOC 2 Type II audit in March.'],
+  ['absolute-claim-en', 'It never fails.', 'It retries three times before failing.'],
+  ['competitor-strawman-en', 'Most harnesses collapse under tool faults.', 'Torque retries a failed tool call once.'],
+  ['competitor-strawman-en', 'Torque outclasses primitive script-based libraries.', 'Torque is written in TypeScript.'],
+  ['competitor-strawman-en', 'Unlike other frameworks, we log every step.', 'We log every step.'],
+  ['hype-vocabulary-en', 'An industrial-grade runtime.', 'A runtime with 40 lines of policy.'],
+  ['hype-vocabulary-en', 'Stop babysitting your agents.', 'Review the run log after each task.'],
+  ['unsourced-metric-es', 'Entrega 14x más rendimiento.', 'La latencia mediana bajó de 14,8 a 6,4 minutos en el benchmark de 300 tareas.'],
+  ['unsourced-metric-es', 'Arranque en menos de 8 ms.', 'El tiempo de espera es de 8 segundos.'],
+  ['absolute-claim-es', 'Cero latencia en cualquier carga.', 'La latencia mediana fue de 40 ms.'],
+  ['absolute-claim-es', 'Un sistema infalible.', 'Un sistema con reintentos.'],
+  ['competitor-strawman-es', 'Las herramientas tradicionales fallan bajo carga.', 'Las colas de trabajo reintentan tres veces.'],
+  ['competitor-strawman-es', 'A diferencia de otros arneses, registramos cada paso.', 'Registramos cada paso.'],
+  ['hype-vocabulary-es', 'Un runtime de grado industrial.', 'Un runtime con cuarenta líneas de política.'],
   ['contrast-es', 'No es un problema técnico, sino de coordinación.', 'Es un problema de coordinación.'],
   ['throat-clearing-es', 'Seamos claros: falla.', 'Falla con entradas vacías.'],
   ['narrative-cliches-es', 'Hubo un silencio sepulcral.', 'Nadie habló.'],
@@ -185,6 +204,38 @@ test('lint: --lang restricts rules, bad value exits 2, auto detects language', (
   assert.equal(run('node', [LINT, '--lang', 'xx'], { input: 'hola' }).status, 2);
 });
 
+test('lint: the frontier-model landing fixture is flagged by the new rule families', () => {
+  const r = JSON.parse(run('node', [LINT, '--json', path.join(ROOT, 'tests', 'fixtures', 'frontier-landing.txt')]).stdout);
+  const by = (id) => r.issues.filter((i) => i.id === id).length;
+  assert.ok(by('unsourced-metric-en') >= 8, `metrics: ${by('unsourced-metric-en')}`);
+  assert.ok(by('absolute-claim-en') >= 3, 'absolutes');
+  assert.ok(by('competitor-strawman-en') >= 4, 'strawmen');
+  assert.ok(by('hype-vocabulary-en') >= 3, 'hype vocabulary');
+  assert.equal(r.issues.filter((i) => i.severity === 'error').length, 0, 'new families are warnings, never blocking');
+});
+
+test('lint: --facts exempts metrics the author supplied, and only those', () => {
+  const d = tmp();
+  const facts = path.join(d, 'brief.txt');
+  fs.writeFileSync(facts, 'Our numbers: 61% smaller context, 34% lower spend.');
+  const text = '61% smaller context and 34% lower spend. Also 14.2x faster.';
+  const without = lint(text);
+  assert.equal(without.issues.filter((i) => i.id === 'unsourced-metric-en').length, 3);
+  const withFacts = JSON.parse(run('node', [LINT, '--json', '--facts', facts], { input: text }).stdout);
+  const left = withFacts.issues.filter((i) => i.id === 'unsourced-metric-en').map((i) => i.match);
+  assert.equal(left.length, 1);
+  assert.match(left[0], /14\.2x/);
+  assert.equal(run('node', [LINT, '--facts', path.join(d, 'nope.txt')], { input: 'x' }).status, 2);
+});
+
+test('lint: markdown lines marked as bad examples (❌ or "Avoid:") are not flagged', () => {
+  const d = tmp();
+  const f = path.join(d, 'a.md');
+  fs.writeFileSync(f, '* Avoid: "Blazing fast performance", "Bank-grade security".\n- ❌ Zero downtime, 14.2x faster.\n\nPlain sentence.\n');
+  const r = JSON.parse(run('node', [LINT, '--json', f]).stdout);
+  assert.equal(r.issues.length, 0, JSON.stringify(r.issues.map((i) => i.id)));
+});
+
 test('lint: <!-- smooth-lint-disable --> regions are skipped in markdown', () => {
   const d = tmp();
   const f = path.join(d, 'a.md');
@@ -196,6 +247,8 @@ test('lint: <!-- smooth-lint-disable --> regions are skipped in markdown', () =>
 
 test('docs checked by CI lint clean', () => {
   for (const f of ['README.md', 'CONTRIBUTING.md', 'rules/anti-slop-directive.md']) {
+    const hits = JSON.parse(run('node', [LINT, '--json', path.join(ROOT, f)]).stdout).issues.filter((i) => /metric|absolute|strawman|hype|landing|social/.test(i.id));
+    assert.equal(hits.length, 0, `${f}: ${hits.map((i) => i.id + ':' + i.match.trim())}`);
     assert.equal(run('node', [LINT, path.join(ROOT, f)]).status, 0, f);
   }
 });

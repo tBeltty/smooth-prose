@@ -91,8 +91,11 @@ function visibleText(html) {
 function metrics(text, vague = false) {
   const f = path.join(os.tmpdir(), `sp-naive-${process.pid}.txt`);
   fs.writeFileSync(f, text);
-  const lint = JSON.parse(spawnSync('node', [path.join(REPO, 'bin', 'smooth-lint.mjs'), '--json', f], { encoding: 'utf8' }).stdout);
+  const factsFile = path.join(os.tmpdir(), `sp-naive-facts-${process.pid}.txt`);
+  fs.writeFileSync(factsFile, vague ? '' : REQUEST('x'));
+  const lint = JSON.parse(spawnSync('node', [path.join(REPO, 'bin', 'smooth-lint.mjs'), '--json', '--facts', factsFile, f], { encoding: 'utf8' }).stdout);
   fs.unlinkSync(f);
+  fs.unlinkSync(factsFile);
   const nums = (text.match(/\d+(?:\.\d+)?/g) || []);
   const allowed = vague ? new Set(['1', '0', '1.0', '2025', '2026']) : ALLOWED_NUMBERS;
   const invented = [...new Set(nums.filter((n) => !allowed.has(n)))];

@@ -13,7 +13,7 @@ node tests/sandbox/grade.mjs <root>      # layer 3: grade the results
 
 | Layer | What it checks | Result |
 |---|---|---|
-| 1. Claim tests | 60 `node:test` tests, zero dependencies | 60 pass, 0 pending |
+| 1. Claim tests | 87 `node:test` tests, zero dependencies | 87 pass, 0 pending |
 | 2. Skill evals | 13 cases across core, web, marketing, narrative, 3 runs each | 38/39 with skills, 29/39 control |
 | 3. Sandbox runs | 6 English scenarios, 38 framework CLI calls logged | 6/6 |
 
@@ -75,7 +75,9 @@ Residual leak: two vague-rerun agents read `tests/naive/naive.mjs`, which still 
 
 **Rules from the reading, and an out-of-sample check.** The reading above led to two English rules, `landing-cliche-en` and `social-proof-en`. Scoring the pages they were written from proves nothing, so a fresh vague run with a different product name was done (3 bare, 3 full install): the new rules flagged all 3 bare pages (2.7 issues on average, for phrases such as "built for real work", "Everything an agent needs", "a step up") and none of the 3 full-install pages. The rules also flag nothing in the repo docs or in the 9 grounded-request pages. The limit: it is the same small model, repeating its own stock phrases, so this shows the rules generalize within that model only.
 
-A landing page produced by a larger anonymous model for a similar request was linted as well: 0 issues. It is dense with slop of a different kind (fabricated metrics such as "14.2x" and "99.98% nominal", "industrial-grade", "outclasses primitive script-based libraries", competitor strawmen, "Certified secure"), and none of it matches the current rules. Detecting unsupported metrics and competitor strawmen deterministically is not covered yet.
+<!-- smooth-lint-disable -->
+A landing page produced by a larger anonymous model for a similar request was linted as well: 0 issues at the time. It is dense with slop of a different kind (fabricated metrics such as "14.2x" and "99.98% nominal", "industrial-grade", "outclasses primitive script-based libraries", competitor strawmen, "Certified secure"). That led to four more rule families, in English and Spanish: unsourced performance metrics, absolute claims, unsupported attacks on alternatives and hype vocabulary. The same page now gets 21 warnings (kept as a fixture in `tests/fixtures/`). The families are warnings, never blocking. A metric is treated as sourced when its line mentions a benchmark, source or link, or when the author passes the brief with `--facts`; lines marked as bad examples (❌ or "Avoid:") are skipped. They were written after reading that one page, so they are tuned to it: no hits on the repo docs or on the 9 pages written from supplied facts (with `--facts`), but not yet checked against fresh output from other models.
+<!-- smooth-lint-enable -->
 
 ### Bugs the tests found
 

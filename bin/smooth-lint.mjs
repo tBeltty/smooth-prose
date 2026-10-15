@@ -203,12 +203,14 @@ function analyzeWordRepetitions(text) {
 }
 
 /**
- * Strips code blocks, inline code and <!-- smooth-lint-disable --> regions in markdown so that quoted slop examples are not flagged
+ * Strips code blocks, inline code and <!-- smooth-lint-disable --> regions in markdown and lines that mark bad examples (a line containing ❌, or starting with "Avoid:") so that quoted slop is not flagged
  */
 function stripMarkdownCode(text) {
   const blank = match => match.replace(/[^\n]/g, ' ');
   return text
     .replace(/<!--\s*smooth-lint-disable\s*-->[\s\S]*?<!--\s*smooth-lint-enable\s*-->/g, blank)
+    .replace(/^.*❌.*$/gm, blank)
+    .replace(/^[ \t]*(?:[*-][ \t]+)?\*{0,2}(?:Avoid|Evita)\*{0,2}:.*$/gim, blank)
     .replace(/```[\s\S]*?```/g, match => '\n'.repeat((match.match(/\n/g) || []).length))
     .replace(/`[^`\n]+`/g, match => ' '.repeat(match.length));
 }
@@ -216,7 +218,7 @@ function stripMarkdownCode(text) {
 /**
  * Main Linter Execution
  */
-function lintText(text, filePath = '<stdin>', langOpt = 'auto') {
+function lintText(text, filePath = '<stdin>', langOpt = 'auto', factsText = '') {
   const isMarkdown = filePath.endsWith('.md') || filePath.endsWith('.markdown');
   const scannableText = isMarkdown ? stripMarkdownCode(text) : text;
   const issues = [];
@@ -239,6 +241,16 @@ function lintText(text, filePath = '<stdin>', langOpt = 'auto') {
         match: m[0].trim(),
         fix: rule.fix
       });
+    }
+  }
+
+  // Metrics the author supplied (--facts) are sourced by definition: drop unsourced-metric hits whose numbers appear there
+  if (factsText) {
+    const factNums = new Set(factsText.match(/\d+(?:[.,]\d+)?/g) || []);
+    for (let i = issues.length - 1; i >= 0; i--) {
+      if (!issues[i].id.startsWith('unsourced-metric')) continue;
+      const nums = issues[i].match.match(/\d+(?:[.,]\d+)?/g) || [];
+      if (nums.length && nums.every(n => factNums.has(n))) issues.splice(i, 1);
     }
   }
 
@@ -327,7 +339,21 @@ if (langIdx !== -1) {
     process.exit(2);
   }
 }
-const targetFile = args.find((a, i) => !a.startsWith('--') && !(langIdx !== -1 && !args[langIdx].includes('=') && i === langIdx + 1));
+const factsIdx = args.findIndex(a => a === '--facts' || a.startsWith('--facts='));
+let factsText = '';
+if (factsIdx !== -1) {
+  const factsPath = args[factsIdx].includes('=') ? args[factsIdx].split('=')[1] : args[factsIdx + 1];
+  if (!factsPath || !fs.existsSync(path.resolve(process.cwd(), factsPath))) {
+    console.error(`${colors.red}Error: --facts needs an existing file.${colors.reset}`);
+    process.exit(2);
+  }
+  factsText = fs.readFileSync(path.resolve(process.cwd(), factsPath), 'utf-8');
+}
+const valueIdx = new Set();
+for (const [idx, flag] of [[langIdx, '--lang'], [factsIdx, '--facts']]) {
+  if (idx !== -1 && args[idx] === flag) valueIdx.add(idx + 1);
+}
+const targetFile = args.find((a, i) => !a.startsWith('--') && !valueIdx.has(i));
 
 if (!targetFile) {
   // Read from stdin if piped
@@ -336,12 +362,12 @@ if (!targetFile) {
     process.stdin.setEncoding('utf-8');
     process.stdin.on('data', chunk => { input += chunk; });
     process.stdin.on('end', () => {
-      const res = lintText(input, 'stdin', langOpt);
+      const res = lintText(input, 'stdin', langOpt, factsText);
       printReport(res, jsonMode);
       process.exit(res.issues.filter(i => i.severity === 'error').length > 0 ? 1 : 0);
     });
   } else {
-    console.log(`${colors.bold}${UI[systemLang()].usage}:${colors.reset} smooth-lint <archivo.md> [--json] [--lang auto|en|es|all]`);
+    console.log(`${colors.bold}${UI[systemLang()].usage}:${colors.reset} smooth-lint <archivo.md> [--json] [--lang auto|en|es|all] [--facts brief.txt]`);
     console.log(`     cat text.txt | smooth-lint [--json]`);
     process.exit(0);
   }
@@ -352,7 +378,7 @@ if (!targetFile) {
     process.exit(1);
   }
   const content = fs.readFileSync(absPath, 'utf-8');
-  const result = lintText(content, targetFile, langOpt);
+  const result = lintText(content, targetFile, langOpt, factsText);
   printReport(result, jsonMode);
   process.exit(result.issues.filter(i => i.severity === 'error').length > 0 ? 1 : 0);
 }
