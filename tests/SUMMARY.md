@@ -63,7 +63,15 @@ The layer 2 and 3 prompts are structured (sections, limits, "use only these fact
 | directive | 0 | 0 | 0.3 | 10/10 |
 | full install | 0 | 0 | 0.0 | 10/10 |
 
-With the facts supplied, the bare model did not write hype either, so lint and hype do not separate the conditions. The difference is fabrication: bare runs invented code samples, a token budget of 200000 and derived percentages, and said so in their own summaries; runs with the framework invented less, and the full-install runs removed their own invented details after reading the skills and running the linter. Three runs per condition, so this is a direction, not a result. A vaguer request, where the model has to fill gaps itself, has not been run yet.
+With the facts supplied, the bare model did not write hype either, so lint and hype do not separate the conditions. The difference is fabrication: bare runs invented code samples, a token budget of 200000 and derived percentages, and said so in their own summaries; runs with the framework invented less, and the full-install runs removed their own invented details after reading the skills and running the linter. Three runs per condition, so this is a direction, not a result.
+
+**Vague request.** Same three conditions, but the request gives no data: "Make me a landing page for Halyard 1.0, our new agent harness. It's a big step up from the usual harnesses." A first attempt used the product name Torque and was discarded: the agents run with this repo as working directory, 4 of 9 found the Torque facts in `tests/` and used them. The rerun uses a name that appears nowhere in the repo.
+
+Results of the rerun (3 runs each): lint issues 0 / 0 / 0 and hype-list matches 0 / 0 / 0 for bare / directive / full install. The automated metrics do not separate the conditions. The pre-registered "invented numbers" metric is also unusable here, because it counts step numerals such as 01, 02, 03; counting only numbers with units, bare invented none, the directive condition invented timing figures in one run, and full install one log ID.
+
+Reading the pages shows a clear difference the metrics miss. Bare runs wrote marketing-register copy: "keeps your agents on course", "built for real work", "Set sail with Halyard 1.0", "A real step up from the usual harness", "Nothing hidden", "Why teams move to Halyard", plus placeholder testimonials and "Free to start" claims. Runs with the directive or the framework wrote plain mechanism copy ("Halyard sits between your model and your tools. It sends each model call, runs the tools the model requests, and records every step"). The trade-off: with no facts supplied, the framework runs invented more specific mechanisms (for example sandboxed tool calls and restart-from-last-step) because the directive asks for concrete mechanisms; every agent flagged its invented details in its own summary. This reading is subjective, and it is three runs per condition.
+
+Residual leak: two vague-rerun agents read `tests/naive/naive.mjs`, which still contains the grounded Torque request, but neither page uses those facts.
 
 ### Bugs the tests found
 
@@ -73,6 +81,7 @@ The tests led to fixes for: missing English coverage (README examples were not d
 
 - Agents are not hermetically isolated. Subagents do not inherit the conversation, but they start with the host's global instructions and tool set. Checked in the transcripts of the nine control runs: no skill was invoked and nothing under `skills/` or `rules/` was read, so the control is clean in practice, not by construction.
 - Three runs per eval case and one per sandbox scenario, with a single small model. The differences are indicative, not statistically established.
+- Agents run with this repository as working directory, so test fixtures can leak into runs (it happened once; see layer 4). Fixtures should live outside the repo when agents run.
 - Some checks encode the skills' own rules (for example the 40-character hook), which the control was not told. That measures what the skills add, not general writing quality.
 - Several eval inputs echo examples in the skills, which favors the with-skill runs. Held-out inputs are still to do.
 - The sandbox scenarios have no control runs yet.

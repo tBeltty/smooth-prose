@@ -10,7 +10,8 @@
 //   hype        matches of the HYPE list below
 //   invented    numbers in the page that are not in the facts
 //   kept        facts preserved (of 10)
-// Usage: node tests/naive/naive.mjs setup [root]    |    node tests/naive/naive.mjs grade <root>
+// Scenarios: "grounded" (default; the raw facts are provided) and "vague" (no data at all, the model must fill the gaps).
+// Usage: node tests/naive/naive.mjs setup [root] [--vague]    |    node tests/naive/naive.mjs grade <root>
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -30,6 +31,11 @@ const HYPE = [
   /fearless/i, /world[- ]class/i, /best[- ]in[- ]class/i, /turbocharg/i, /\bimagine\b/i, /\bsay goodbye\b/i,
   /\bwelcome to the future\b/i, /\bthe future of\b/i, /\bwhether you(?:'re| are)\b/i, /\bnever (?:been|before)\b/i,
 ];
+
+// The vague scenario uses a product name that appears nowhere in this repo: agents run with the repo as working
+// directory and will grep it, and a first attempt with "Torque" found the fixtures in tests/ and used them.
+const VAGUE_PRODUCT = 'Halyard';
+const VAGUE_REQUEST = (dir) => `Make me a landing page for ${VAGUE_PRODUCT} 1.0, our new agent harness. It's a big step up from the usual harnesses. Save it as ${dir}/index.html.`;
 
 const REQUEST = (dir) => `Make me a landing page for Torque 1.0, our new agent harness. Save it as ${dir}/index.html.
 
@@ -52,8 +58,9 @@ This project uses the Smooth Prose framework, installed at ${root}/framework.
 Apply these standards to all copy you write.`;
 }
 
-function setup(root) {
+function setup(root, vague = false) {
   fs.mkdirSync(path.join(root, 'prompts'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'scenario.txt'), vague ? 'vague' : 'grounded');
   for (const rel of spawnSync('git', ['ls-files'], { cwd: REPO, encoding: 'utf8' }).stdout.split('\n').filter(Boolean)) {
     if (rel.startsWith('tests/') || rel.startsWith('.github/')) continue;
     const dest = path.join(root, 'framework', rel);
@@ -64,7 +71,7 @@ function setup(root) {
     const dir = path.join(root, `${cond}-r${r}`);
     fs.mkdirSync(dir, { recursive: true });
     const md = claudeMd(cond, root);
-    const prompt = (md ? `Project instructions (loaded from CLAUDE.md):\n<<<\n${md}\n>>>\n\n` : '') + REQUEST(dir);
+    const prompt = (md ? `Project instructions (loaded from CLAUDE.md):\n<<<\n${md}\n>>>\n\n` : '') + (vague ? VAGUE_REQUEST(dir) : REQUEST(dir));
     fs.writeFileSync(path.join(root, 'prompts', `${cond}-r${r}.txt`), prompt);
   }
   console.log(root);
@@ -81,13 +88,14 @@ function visibleText(html) {
     .replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim();
 }
 
-function metrics(text) {
+function metrics(text, vague = false) {
   const f = path.join(os.tmpdir(), `sp-naive-${process.pid}.txt`);
   fs.writeFileSync(f, text);
   const lint = JSON.parse(spawnSync('node', [path.join(REPO, 'bin', 'smooth-lint.mjs'), '--json', f], { encoding: 'utf8' }).stdout);
   fs.unlinkSync(f);
   const nums = (text.match(/\d+(?:\.\d+)?/g) || []);
-  const invented = [...new Set(nums.filter((n) => !ALLOWED_NUMBERS.has(n)))];
+  const allowed = vague ? new Set(['1', '0', '1.0', '2025', '2026']) : ALLOWED_NUMBERS;
+  const invented = [...new Set(nums.filter((n) => !allowed.has(n)))];
   const hype = HYPE.flatMap((re) => text.match(new RegExp(re.source, 'gi')) || []);
   return {
     lintIssues: lint.issues.length,
@@ -96,19 +104,21 @@ function metrics(text) {
     hypeWords: hype.map((h) => h.toLowerCase()),
     invented: invented.length,
     inventedList: invented,
-    kept: FACTS.filter((x) => text.includes(x)).length,
+    kept: vague ? 0 : FACTS.filter((x) => text.includes(x)).length,
     words: text.split(/\s+/).filter(Boolean).length,
   };
 }
 
 function grade(root) {
+  const vague = fs.existsSync(path.join(root, 'scenario.txt')) && fs.readFileSync(path.join(root, 'scenario.txt'), 'utf8') === 'vague';
+  console.log(`scenario: ${vague ? 'vague' : 'grounded'}\n`);
   const rows = {};
   for (const cond of CONDITIONS) {
     rows[cond] = [];
     for (let r = 1; r <= RUNS; r++) {
       const f = path.join(root, `${cond}-r${r}`, 'index.html');
       if (!fs.existsSync(f)) { rows[cond].push(null); continue; }
-      rows[cond].push(metrics(visibleText(fs.readFileSync(f, 'utf8'))));
+      rows[cond].push(metrics(visibleText(fs.readFileSync(f, 'utf8')), vague));
     }
   }
   const mean = (a, k) => (a.length ? (a.reduce((s, x) => s + x[k], 0) / a.length).toFixed(1) : '-');
@@ -122,6 +132,10 @@ function grade(root) {
 }
 
 const [cmd, arg] = process.argv.slice(2);
-if (cmd === 'setup') setup(path.resolve(arg || fs.mkdtempSync(path.join(os.tmpdir(), 'sp-naive-'))));
+if (cmd === 'setup') {
+  const vague = process.argv.includes('--vague');
+  const rootArg = process.argv.slice(3).find((a) => !a.startsWith('--'));
+  setup(path.resolve(rootArg || fs.mkdtempSync(path.join(os.tmpdir(), 'sp-naive-'))), vague);
+}
 else if (cmd === 'grade' && arg) grade(path.resolve(arg));
 else { console.error('usage: naive.mjs setup [root] | grade <root>'); process.exit(2); }
