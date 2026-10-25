@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "smooth-prose: Context-Agnostic Editorial Suite and Deterministic Text Linter for Human Cadence"
+type: software
+authors:
+  - family-names: Correa
+    given-names: Jhonatan
+    orcid: "https://orcid.org/0009-0006-7779-8729"
+    affiliation: "tBelt"
+license: MIT
+repository-code: "https://github.com/tBeltty/smooth-prose"
