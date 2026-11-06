@@ -49,3 +49,12 @@ Stop using generic engagement-bait (*"Nobody is talking about this..."*, *"99% o
 | *A secret almost nobody knows about* | A documented pattern that remains underused |
 | *La guía definitiva que transformará tu vida* | 5 prácticas probadas para organizar tu semana |
 | *Desbloquea el potencial ilimitado de tu negocio* | Reduce el costo de adquisición de clientes en un 15% |
+
+---
+
+## 3. Progressive Disclosure References (Load On-Demand Only)
+
+For deep conversion copywriting, page structure, or classic advertising principles, read the relevant reference inside `./references/`:
+- [David Ogilvy's Advertising Principles](./references/ogilvy-principles.md): Positioning, headline engineering, research-backed promises, and long-form sales copy.
+- [Conversion Copywriting Guide](./references/conversion-copywriting.md): Landing pages, pricing pages, feature pages, and CTA architecture.
+- [Copy Frameworks](./references/copy-frameworks.md) & [Natural Transitions](./references/natural-transitions.md): Structural templates and non-robotic section transitions.
